@@ -12,6 +12,7 @@ class MotionSensor {
   void loop();   // 毎ループ呼び出し: ESPectre ポンプ + Wi-Fi 再接続
 
   bool wifiConnected() const { return wifi_connected_; };
+  unsigned long motionCount() const { return motion_count_; };
   bool ready() const { return ready_; };          // 検知結果が信頼できるか(キャリブレーション完了)
   bool motion() const { return in_motion_; };     // 現在モーション検知中か
   float movement() const { return movement_; };   // 最新の移動量スコア

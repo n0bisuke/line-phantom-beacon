@@ -10,7 +10,8 @@ static const unsigned long kWifiRetryIntervalMs = 10000UL;    // 切断時の再
 // 検知しきい値・CSI取得レートはライブラリ既定値に任せる(Phase 1 では未調整)。
 // キャリブレーションは設置後に静止状態で行われる(onReady 参照)。
 
-// ---- シリアルログ ----
+// ---- シリアルログ / LCD ----
 static const unsigned long kStatusLogIntervalMs = 5000UL;     // 定期ステータス表示間隔
 static const unsigned long kSerialStartupDelayMs = 1000UL;    // 起動直後のシリアル安定待ち
+static const unsigned long kDisplayUpdateIntervalMs = 250UL;  // LCD 更新間隔
 static const constexpr uint32_t kSerialBaud = 115200U;

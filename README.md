@@ -56,23 +56,35 @@ pio test -e native                   # lib/phantom_events + lib/line_beacon_fram
 
 ビルド成果物は `.pio/build/m5stack-atoms3/`(ホストからも見える。Git管理外)。
 
-## ESP32への書き込み・シリアルモニタ
+## ESP32への書き込み・シリアルモニタ(macOS + OrbStack 実績あり)
 
-macOS の Docker はコンテナに USB を渡せないため、**書き込みはホスト側**で行う。
+標準は **pio remote**(コンテナからコマンド1つ。ホストに3GBのツールチェーンは不要)。
 
-**A. ホストの PlatformIO を使う(基本)**
+**1. 初回だけ(ホストmacOS側で)**
 ```bash
-# ホストのMacで(PlatformIO Core か VS Code の PlatformIO 拡張が必要)
-pio run -t upload
-pio device monitor                   # 115200 baud
+pio account login          # PlatformIO アカウント(対話ログイン)
+pio remote agent start     # 常駐させる(ターミナルを閉じない)
 ```
 
-**B. ESP32 をコンテナから書き込む(RFC2217 経由。未検証)**
-```bash
-# ホストのMacで(pip install esptool が必要)。ポート名は ls /dev/cu.* で確認
-esp_rfc2217_server -v -p 4000 /dev/cu.usbserial-XXXX
+**2. トークンを `.env` に追加してからコンテナで実行**
 ```
-`platformio.ini` の `upload_port` / `monitor_port` のコメントを外し、コンテナ内で `pio run -t upload` / `pio device monitor`。
+PLATFORMIO_AUTH_TOKEN=<platformio.org/account/tokens で発行したトークン>
+```
+```bash
+# コンテナ内
+export PLATFORMIO_AUTH_TOKEN=$(sed -n 's/^PLATFORMIO_AUTH_TOKEN=//p' .env)
+pio remote run -t upload          # ビルド(コンテナ) → クラウド経由でボードへ書き込み
+pio remote device monitor         # モニタ (115200)
+```
+
+**3. 代替1: uvx esptool で直書き(Remote/agentが使えないとき)**
+- コンテナで `esptool --chip esp32s3 merge_bin -o merged-firmware.bin ...`(bootloader@0x0 + partitions@0x8000 + boot_app0.bin@0xe000 + firmware.bin@0x10000)を作る
+- ホストで `uvx esptool --chip esp32s3 --port /dev/cu.usbmodemXXX -b 460800 write-flash 0x0 .pio/build/m5stack-atoms3/merged-firmware.bin`
+- モニタ: `uv run --with pyserial python -m serial.tools.miniterm /dev/cu.usbmodemXXX 115200`
+
+**4. 代替2: RFC2217経由**(platformio.ini のコメント参照、未検証)
+
+注意: OrbStackの `orb usb attach` は macOS からデバイスを奪う。`orb usb detach 00100000` + USB抜き差しで戻る。AtomS3ボード定義には `ARDUINO_USB_CDC_ON_BOOT` が無く、これ(build_flags で指定済み)が無いとPC側のシリアルにログが一切出ない。
 
 ### 設定
 `include/secrets.h` に Wi-Fi SSID/パスワード、HWID、Device Message、中継URL、しきい値を書く(コミットされない):
@@ -122,11 +134,15 @@ cp include/secrets.h.example include/secrets.h  # 実値を書く
 
 ## 実機検証結果
 
-以下は**未確認**(ビルド成功のみ確認済み):
-- AtomS3 での Wi-Fi 接続 / ESPectre のキャリブレーション・動き検知の感度
+**確認済み(2026-11-12)**:
+- 書き込み: `pio remote run -t upload` 成功(コンテナでビルド → ホストの AtomS3 へ)
+- AtomS3 のファーム起動・LCD の初期表示(ユーザーが実機で確認)
+
+**未確認**:
+- AtomS3 での ESPectre キャリブレーション・動き検知の感度(LCD診断中)
 - nRF Connect などでの LINE Simple Beacon フレーム受信確認(Phase 2 実装後)
 - CSI と BLE の無線共存(Phase 3)
-- 書き込み・シリアルモニタの動作
+- Node.js 中継・LINE連携全体(Phase 5)
 
 ## 制約・既知の問題
 
