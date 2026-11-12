@@ -1,0 +1,7 @@
+{
+  "name": "line_beacon_frame",
+  "version": "0.1.0",
+  "description": "LINE Simple Beacon advertising payload builder for line-phantom-beacon",
+  "frameworks": "*",
+  "platforms": "*"
+}

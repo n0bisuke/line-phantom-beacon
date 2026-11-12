@@ -1,0 +1,7 @@
+{
+  "name": "phantom_events",
+  "version": "0.1.0",
+  "description": "Pseudo leave / sleep-suspected event state machine for line-phantom-beacon",
+  "frameworks": "*",
+  "platforms": "*"
+}
