@@ -37,6 +37,11 @@ void MotionSensor::begin() {
   s_sensor.onMotion(onMotionCb);
   s_sensor.onFault(onFaultCb);
 
+  // トラフィック生成: 既定の PING(ICMP)は ICMP を弾く AP(iPhone ホットスポット等)で
+  // CSI が流れなくなるため、wifi_raw(Null Data フレーム + ACK)に切り替える。
+  s_sensor.config().traffic_generator_mode = espectre::TrafficGeneratorMode::WIFI_RAW;
+  Serial.println("[espectre] traffic=wifi_raw (Null Data + ACK)");
+
   if (!s_sensor.begin()) {
     Serial.println("[espectre] begin() failed (Wi-Fi STA 必須)");
   }
@@ -72,6 +77,16 @@ void MotionSensor::logStatus(unsigned long now) {
                 idle == ULONG_MAX ? "none" : String((unsigned long)idle).c_str(),
                 motion_count_,
                 now);
+  // CSI パイプラインの診断(1秒あたりのレート)。CSI が流れていない場合の切り分け用。
+  const auto *diag = s_sensor.runtime().diagnostics_sample();
+  if (diag != nullptr) {
+    Serial.printf("[csi] gen_pps=%.0f rx_pps=%.0f accepted_pps=%.0f admitted_pps=%.0f occ=%.2f\n",
+                  diag->generator_pps,
+                  diag->traffic_rx_pps,
+                  diag->csi_accepted_pps,
+                  diag->csi_admitted_pps,
+                  diag->csi_occupancy_ratio);
+  }
 }
 
 void MotionSensor::tryReconnect(unsigned long now) {

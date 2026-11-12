@@ -39,3 +39,16 @@
 3. git 初回コミット(秘密情報が含まれないことの最終確認)
 4. Phase 2: BLE Advertising発信(Bluedroid標準BLE方針確認済み)
 5. Phase 5: Node.js中継サーバー(Node.jsはコンテナに無いので別コンテナ/ホストで)
+
+## Phase 1 実機検証 成功 (2026-11-12 午後)
+
+- 書き込み成功後、LCD 表示を大きい文字構成に刷新(CALIB/MOVE/静止秒数を大表示、上段に W/R/mv)
+- ESPectre 既定のトラフィック生成は PING(ICMP)だが iPhone ホットスポットは ICMP を通さず movement=0.0 で検知ゼロに見えた
+- `sensor.config().traffic_generator_mode = WIFI_RAW` に変更 → Null Data + ACK で CSI 82〜96 pps 取得(occ 0.8台)
+- キャリブレーション起動約27秒で ready=1、[event] motion を5回確認、idle_ms カウント正常
+- ESPectre 診断API: `sensor.runtime().diagnostics_sample()`(gen/rx/accepted/admitted pps, occupancy)を [csi] ログに追加
+- シリアル罠の知見: 稼働中ボードへのモニタ open は `rst:0x15 boot:0x20 DOWNLOAD` に落ちやすい。USB抜き差し→コールドブート直後に open だと `boot:0x28` で安定。復帰手段: 抜き差し or 再`pio remote run -t upload`(ダウンロードモードからも書ける)
+
+### 残課題
+- movement=0.0 のまま表示される(検知は動作しているがスコア表示が常に0; snapshot の別フィールドの可能性)
+- 次は Phase 2: BLE LINE Simple Beacon 送信実装

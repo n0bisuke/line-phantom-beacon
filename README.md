@@ -136,10 +136,14 @@ cp include/secrets.h.example include/secrets.h  # 実値を書く
 
 **確認済み(2026-11-12)**:
 - 書き込み: `pio remote run -t upload` 成功(コンテナでビルド → ホストの AtomS3 へ)
-- AtomS3 のファーム起動・LCD の初期表示(ユーザーが実機で確認)
+- AtomS3 のファーム起動・LCD 表示(起動ステージ / 大きいステータス表示)
+- **ESPectre キャリブレーション: 起動約27秒で `ready=1`**
+- **動き検知: `[event] motion` を実機で確認(idle秒数のカウント、motion on/off 遷移も正常)**
+- **CSI 取得: iPhoneホットスポットは ICMP を通さないため 既定の ping では CSI が流れない。`traffic_generator_mode = WIFI_RAW`(Null Data + ACK)に変更でCSI 82〜96 packets/sec を取得**
+- シリアルモニタは **コールドブート(USB抜き差し)直後に開く** と安全。ボード稼働中に頻繁に開閉すると DTR/RTS リセットの罠で ROM ダウンロードモード(`rst:0x15 boot:0x20 ... waiting for download`)に落ちることがある(抜き差しで復帰)
 
 **未確認**:
-- AtomS3 での ESPectre キャリブレーション・動き検知の感度(LCD診断中)
+- 動き検知の感度・検知距離の調整(部屋・設置位置依存)
 - nRF Connect などでの LINE Simple Beacon フレーム受信確認(Phase 2 実装後)
 - CSI と BLE の無線共存(Phase 3)
 - Node.js 中継・LINE連携全体(Phase 5)
