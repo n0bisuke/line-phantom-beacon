@@ -1,0 +1,18 @@
+# このプロジェクトはイメージを build しない(イメージは shared-dev-environments で管理)。
+# 将来このディレクトリを build context にした場合に、秘密情報や巨大なファイルを送らないための設定。
+.git
+.gitignore
+.DS_Store
+.env
+.env.*
+!.env.sample
+*.pem
+*.key
+.claude/
+CLAUDE.local.md
+*.log
+.pio/
+*.bin
+*.hex
+*.uf2
+*.elf

@@ -1,0 +1,20 @@
+name: line-phantom-beacon   # Composeプロジェクト名。他プロジェクトと重複させない
+
+services:
+  pio:
+    extends:
+      file: ${SHARED_DEV_ENV_DIR:-../../shared-dev-environments}/pio/service.yaml
+      service: pio
+    # .env があればコンテナに環境変数として渡す(Ollama設定など)
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      # ソース(.pio/ のビルド成果物もホストから見える。書き込みツールで .bin を使えるように)
+      - .:/workspace
+
+volumes:
+  pio-core:
+    name: pio-core
+  claude-config:
+    name: pio-claude-config

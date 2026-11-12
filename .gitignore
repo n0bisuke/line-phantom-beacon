@@ -1,0 +1,34 @@
+# ---- OS / エディタ ----
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# ---- 環境変数・秘密情報(.env.sample だけ管理する) ----
+.env
+.env.*
+!.env.sample
+*.pem
+*.key
+# Wi-Fi SSID/パスワードなど(sample は include/secrets.h.example を管理する)
+include/secrets.h
+
+# ---- Claude Code の個人設定(共有する設定 .claude/settings.json は管理する) ----
+.claude/settings.local.json
+CLAUDE.local.md
+
+# ---- ログ ----
+*.log
+
+# ---- PlatformIO ----
+.pio/
+.vscode/.browse.c_cpp.db*
+.vscode/c_cpp_properties.json
+.vscode/launch.json
+.vscode/ipch
+
+# ---- 書き出したファームウェア ----
+*.bin
+*.hex
+*.uf2
+*.elf
