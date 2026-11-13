@@ -2,8 +2,21 @@
 
 namespace phantom {
 
-EventState::EventState(uint32_t leave_ms, uint32_t sleep_ms)
-    : leave_ms_(leave_ms), sleep_ms_(sleep_ms) {
+void EventState::reset(uint32_t now) {
+  // sensing 再開(ready 復帰)時の初期化: 「検知実績あり・直前に動いた」という仮定で
+  // 静観開始とする。ノイズで ready が落ち復帰しても、その直後の擬似 leave は
+  // 10秒の静観後にしか出ず、MotionResumed も出さないため push が回転しない。
+  // leave / sleep emitted フラグも解消するため、新しい静観期間で 1 回だけ通知される。
+  phase_ = Phase::Quiet;
+  last_motion_ms_ = now;
+  has_motion_ = true;
+  leave_emitted_ = false;
+  continued_emitted_ = false;
+  sleep_emitted_ = false;
+}
+
+EventState::EventState(uint32_t leave_ms, uint32_t continued_ms, uint32_t sleep_ms)
+    : leave_ms_(leave_ms), continued_ms_(continued_ms), sleep_ms_(sleep_ms) {
   // 対称性のため初期状態は leave_emitted 扱いにしない: 起動直後に誰もいなくても
   // 検知実績がないので「退室」の通知は意味がない。rising edge でのみ解除する。
 }
@@ -44,14 +57,18 @@ Event EventState::onQuietTick(uint32_t now) {
   }
 
   if (quiet >= sleep_ms_ && !sleep_emitted_) {
-    // 寝落ち疑いは退室疑い(pseudo_leave)を包含する。sleep_suspected 発火時点で
-    // leave も出済み扱いにし、後続 tick で pseudo_leave だけが遅れて発火しないようにする。
+    // 寝落ち疑いは最終段階。発火済み後は何も返さない(延長戦なし)
     sleep_emitted_ = true;
-    leave_emitted_ = true;
     phase_ = Phase::Sleep;
     return Event::SleepSuspected;
   }
-  if (quiet >= leave_ms_ && !leave_emitted_) {
+  // 寝落ち(Sleep)が既に発火していたら下位段階は出さない(順番を飛び越えた発火防止)
+  if (!sleep_emitted_ && quiet >= continued_ms_ && !continued_emitted_) {
+    continued_emitted_ = true;
+    phase_ = Phase::Leave;  // 「まだ静か」段階。表示は疑似leaveと同じ
+    return Event::PseudoLeaveContinued;
+  }
+  if (!sleep_emitted_ && quiet >= leave_ms_ && !leave_emitted_) {
     leave_emitted_ = true;
     phase_ = Phase::Leave;
     return Event::PseudoLeave;
@@ -72,6 +89,8 @@ const char *eventName(Event e) {
       return "motion";
     case Event::PseudoLeave:
       return "pseudo_leave";
+    case Event::PseudoLeaveContinued:
+      return "pseudo_leave_continued";
     case Event::SleepSuspected:
       return "sleep_suspected";
     case Event::MotionResumed:

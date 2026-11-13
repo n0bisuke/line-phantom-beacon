@@ -1,0 +1,70 @@
+// api.line.me 接続用の公開証明書(GlobalSign GCC R46 OV TLS CA 2025 中間 + GlobalSign Root R46)。
+// 公開情報なので Git コミットしてよい。2026-11-13 取得。ルートCA有効期限 2029-03-18。
+// 有効期限が切れたら再取得: echo | openssl s_client -connect api.line.me:443 -servername api.line.me -showcerts
+#pragma once
+
+#define LINE_ROOT_CA_PEM \
+  "-----BEGIN CERTIFICATE-----\n" \
+  "MIIFfDCCA2SgAwIBAgIRAIRDWJCDb2c5QYLLnJpdyZ8wDQYJKoZIhvcNAQELBQAw\n" \
+  "RjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExHDAaBgNV\n" \
+  "BAMTE0dsb2JhbFNpZ24gUm9vdCBSNDYwHhcNMjUwOTE3MDI1NTU2WhcNMjkwNjIz\n" \
+  "MDAwMDAwWjBUMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1z\n" \
+  "YTEqMCgGA1UEAxMhR2xvYmFsU2lnbiBHQ0MgUjQ2IE9WIFRMUyBDQSAyMDI1MIIB\n" \
+  "IjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1JyrGiv+210Lw4LTp9qxx9WC\n" \
+  "o6w8HnxcTKr5XwR6WwtKidGXriLqGXtBINGTi4HUZ1Vl3FUIvscLwNcq2DRLwjWs\n" \
+  "cYFNClVnuSw4CtwAcfa7Iltz+0FmFeh/KOWv5BfgCxAo9FaeXRG725b2eedo/7fb\n" \
+  "0zBc6M/XcfQREVteZ6GovnLE96+T8RzRImvX38Y8vZoulp/XWv3p09C1pgp/53+1\n" \
+  "itDl7xbrM4sglGNkeJ5LBN2dOR1sqWCMZ/V4a4cPQwopBtZis1vVh7/k4S6Ysgk0\n" \
+  "CTi5vei0RSEIhxoFk48BHSXzTA4FJxqjfauYCZ4M5tmZ/R5VgXOZ4Ck/PifnXQID\n" \
+  "AQABo4IBVTCCAVEwDgYDVR0PAQH/BAQDAgGGMBMGA1UdJQQMMAoGCCsGAQUFBwMB\n" \
+  "MBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYDVR0OBBYEFGl0Pq/DWwGVSe4UQVqT+rEw\n" \
+  "mNqiMB8GA1UdIwQYMBaAFANcq3OBh6jMsKbVlOI2lkn/BZksMHsGCCsGAQUFBwEB\n" \
+  "BG8wbTAuBggrBgEFBQcwAYYiaHR0cDovL29jc3AuZ2xvYmFsc2lnbi5jb20vcm9v\n" \
+  "dHI0NjA7BggrBgEFBQcwAoYvaHR0cDovL3NlY3VyZS5nbG9iYWxzaWduLmNvbS9j\n" \
+  "YWNlcnQvcm9vdHI0Ni5jcnQwNgYDVR0fBC8wLTAroCmgJ4YlaHR0cDovL2NybC5n\n" \
+  "bG9iYWxzaWduLmNvbS9yb290cjQ2LmNybDAhBgNVHSAEGjAYMAgGBmeBDAECAjAM\n" \
+  "BgorBgEEAaAyCgECMA0GCSqGSIb3DQEBCwUAA4ICAQBEUTiKxe5jEintARUvLBm9\n" \
+  "qWZtGiOSV9E+3bntbFFBDBAroqwB6Cj53Zp/W08HwgxaPXdkVaRNYHB/eAatEtSm\n" \
+  "1ldtoorfPc+mVlzbwCwfbpIs2uqW5rF78ne37qy2o+iVnJptq9AzPnlC03+zhhB9\n" \
+  "JwmjUXVtPuqQZ96tFl0fAT77xGSLzCO8yfEDrxCqdWz2wneShSbCCsC15JB07OgO\n" \
+  "StE+MsVBkwe5+PNzAlAr8NZ6f8mzeY/FzaBzlhYw5+c1yyzXJqp+gjRXWrLpD3Ho\n" \
+  "hGOvIXIvCBnyVrYI/HPe6DR5w7oteui9Rt0xfUUudaTkt0iz7fc23eGboZ+bpvgT\n" \
+  "gbd/kYK6JOrxawMyfBYxrR5zDHIJX0Mws99DNgACKBUfFadKAfwFw0+0airY5WAI\n" \
+  "Xs8yhCb5XGwyzVpcB30BrQbWtqdI0PoE9usNvNbH3YFGfuS8oRmAJEgUUQnwOoGK\n" \
+  "jMWtHacw0n8QESdRM274LJvLd9nwawYU4svJpf06FtKPqGH3nXefL741NO9KzDAG\n" \
+  "PM11YScyJVfYdBDXFM86HU1fBGTKlkLcG/qMJxOqppY4wydRI3koSH6A78nO2QaJ\n" \
+  "yqjTOQyCNHaSlmGjdiOvhJ8y1PiazHnuvWBx6z+7JJF2ukqqfjlSARwyfkfnRUIY\n" \
+  "la7ZYEqcc56eoPAiElhvrg==\n" \
+  "-----END CERTIFICATE-----\n" \
+  "-----BEGIN CERTIFICATE-----\n" \
+  "MIIFRDCCBCygAwIBAgIQdai62Hj4rzBfct0cEUDfOjANBgkqhkiG9w0BAQwFADBM\n" \
+  "MSAwHgYDVQQLExdHbG9iYWxTaWduIFJvb3QgQ0EgLSBSMzETMBEGA1UEChMKR2xv\n" \
+  "YmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2lnbjAeFw0xOTExMjAwMDAwMDBaFw0y\n" \
+  "OTAzMTgwMDAwMDBaMEYxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWdu\n" \
+  "IG52LXNhMRwwGgYDVQQDExNHbG9iYWxTaWduIFJvb3QgUjQ2MIICIjANBgkqhkiG\n" \
+  "9w0BAQEFAAOCAg8AMIICCgKCAgEArKx0MuizZeW67UMmHaaJDUW6KYiypB1j3dPB\n" \
+  "LAlXiTmhVelnNHcMbuRVHVIl0hNrXuEdqbd9iTJfDZ6fLHpjYEAfprC2eI+ZVJYI\n" \
+  "WK7kBrxiBQIWv6+oIwO2lA+8bmzCy9Wmuwzp9sEC+yHeZt0Xq3RC7/B0LyX06mtV\n" \
+  "W5Dbnd9ehwpA+60Za/v3ymCI3trBj9au1X/UPIPu1xZMg0UzayfQhtAcLWvzq33x\n" \
+  "han1KNKt7/OESxyH/BOjOnKiWhEr1idxJ+2BLW1mgZKHtBtYesw/CvpGT014XPgr\n" \
+  "SOMEhMtd9rRqs2X8Qp5RJiMgyz0U+YHtZRYATxpkl2YIz4x74yvAnfkU8hvxVmoW\n" \
+  "vyyFhc14OJrrQmoCNBiDF06UVvi2grXzlt09875/IHc+exkjayzUcnNDV33g+Ndp\n" \
+  "Txc2BPnAkGA3Rd7mDNh0ja6com10XUK+BvXZZG4CEKyJsEw7B01AfiTFipiCeY6k\n" \
+  "p4IgjSP6J3HJ38ZBdKBN9pEW3EaMXyljMVlxDNhvwrYyffvmXVOmfhX8u3V8Xez4\n" \
+  "9hcc7MdrGcvze/ArB6XZbHlUdmydHKZuDul5DKgjaqPfGzAxn7FUe/5qy2aq3GXQ\n" \
+  "op5Kmgcha4GP28RZ+t4iwASc46pbNpPoPb16oZ0LdrELx539z5ioBsL4KqOhg6C3\n" \
+  "JXKlAuMCAwEAAaOCASYwggEiMA4GA1UdDwEB/wQEAwIBhjAPBgNVHRMBAf8EBTAD\n" \
+  "AQH/MB0GA1UdDgQWBBQDXKtzgYeozLCm1ZTiNpZJ/wWZLDAfBgNVHSMEGDAWgBSP\n" \
+  "8Et/qC5FJK5NUPpjmove4t0bvDA+BggrBgEFBQcBAQQyMDAwLgYIKwYBBQUHMAGG\n" \
+  "Imh0dHA6Ly9vY3NwMi5nbG9iYWxzaWduLmNvbS9yb290cjMwNgYDVR0fBC8wLTAr\n" \
+  "oCmgJ4YlaHR0cDovL2NybC5nbG9iYWxzaWduLmNvbS9yb290LXIzLmNybDBHBgNV\n" \
+  "HSAEQDA+MDwGBFUdIAAwNDAyBggrBgEFBQcCARYmaHR0cHM6Ly93d3cuZ2xvYmFs\n" \
+  "c2lnbi5jb20vcmVwb3NpdG9yeS8wDQYJKoZIhvcNAQEMBQADggEBAGBD9cJLVP2v\n" \
+  "gPSlomstHU38guKTe4ELEFOnM9OnuzK2HlzmgVSPdf4Go7r8FZt4+d8lVs7JPt2z\n" \
+  "THYK/cA1f/DYT56clWZO972GbvjOwmHop4LqAe902mRBxEo966EFsaBqwk8zzexW\n" \
+  "nPZ29CXHc3doU0wXhIPzch5d18Mp4y1RRjybOODc89QJSBataMU9rIHNTF6rePxw\n" \
+  "gL4/k/zrGiCRCRJ+iblTL/WIhm0ENfNJMTxlbMHxPYH4aiHarVBXpXPkiZ/85knD\n" \
+  "XNcnTUTZKEtY6xJExiC+5IHDjdnWz/V2d8MkQx+o7TPbwgF/SVcYcp0GPJG6RkLD\n" \
+  "rkNz7Wn9gck=\n" \
+  "-----END CERTIFICATE-----\n"
+

@@ -10,6 +10,7 @@ struct DisplayStatus {
   bool ready = false;
   bool motion = false;
   float movement = 0.0f;
+  int state = 0;                   // 0=監視中, 1=疑似leave(10s〜), 2=寝落ち(30s〜)
   bool has_motion = false;         // 一度でも動きを検知したか
   unsigned long idle_ms = 0;       // 最終検知からの経過 (ms)
   unsigned long count = 0;         // 動作検知 edge 回数

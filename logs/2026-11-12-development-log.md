@@ -52,3 +52,14 @@
 ### 残課題
 - movement=0.0 のまま表示される(検知は動作しているがスコア表示が常に0; snapshot の別フィールドの可能性)
 - 次は Phase 2: BLE LINE Simple Beacon 送信実装
+
+## 2026-11-13: Phase 4/5 統合 + サーバーレス化
+
+- ユーザー要望: 動き検知=push、動きがなくなって10秒=擬似leave push、**サーバーなし構成**
+- マスタースペックの「Node.js 中継」案から **ESP32 直接 LINE push(サーバーレス)** に設計変更(ユーザー決定)
+- `src/line_push_client.{h,cpp}`: POST api.line.me/v2/bot/message/push、TLS検証あり(公開CA src/line_root_ca.h: GlobalSign 中間+ルート、期限2029-03-18)、同一type再送抑制(動き系10秒/静止系60秒)
+- `src/main.cpp`: phantom::EventState を ESPectre の motion 状態に接続し、遷移時(静止→動き/閾値到達)に push
+- secrets.h: LINE_CHANNEL_TOKEN / LINE_USER_ID / DEVICE_ID / PSEUDO_LEAVE_MS=10000(要望で10秒)
+- 中継サーバー relay/ は作成後ユーザー判断で削除(構成確定: サーバーレス)
+- テスト16/16 通過、ビルド OK(RAM 16%, Flash 54.3%)
+- 書き込みは agent 未起動で未実施 → ユーザーに agent 再起動を依頼中

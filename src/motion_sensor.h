@@ -27,6 +27,8 @@ class MotionSensor {
   static void onReadyCb(bool ready);
   static void onFaultCb(const char *message);
 
+  // 複数AP対応の切断時リカバリ: 非同期スキャン → 最強の登録APへ接続
+  enum class WifiRecovery { Idle, Scanning, Connecting };
   void tryReconnect(unsigned long now);
 
   bool wifi_connected_ = false;
@@ -37,4 +39,6 @@ class MotionSensor {
   bool has_motion_ = false;
   unsigned long motion_count_ = 0;       // 動作検知 edge の回数(記録用)
   unsigned long last_wifi_retry_ms_ = 0;
+  WifiRecovery recovery_ = WifiRecovery::Idle;
+  unsigned long recovery_started_ms_ = 0;
 };

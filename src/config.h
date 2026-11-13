@@ -15,3 +15,9 @@ static const unsigned long kStatusLogIntervalMs = 5000UL;     // 定期ステー
 static const unsigned long kSerialStartupDelayMs = 1000UL;    // 起動直後のシリアル安定待ち
 static const unsigned long kDisplayUpdateIntervalMs = 250UL;  // LCD 更新間隔
 static const constexpr uint32_t kSerialBaud = 115200U;
+
+// ---- LINE Messaging API への直接 push (Phase 5・サーバーレス) ----
+// イベント発生は遷移時のみなので同期 POST を許容する。TLS ハンドシェイクを含むため余裕を持つ。
+static const unsigned long kLineTimeoutMs = 8000UL;          // 接続+応答タイムアウト
+static const unsigned long kLineMotionIntervalMs = 10000UL;  // 同一動き系イベントの再送抑制
+static const unsigned long kLineQuietIntervalMs = 30000UL;   // 静止系イベントの再送抑制(メッセージ枠保護)
