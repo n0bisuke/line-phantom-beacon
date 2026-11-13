@@ -1,0 +1,30 @@
+// GitHub Codespaces / VS Code Dev Containers 用設定。
+// ビルドとユニットテストはコンテナ内で完結。実機への書き込みは pio remote で
+// ホストPCの agent を経由する(コンテナから USB には直接アクセスできない)。
+// 詳細手順: docs/handson.md
+{
+  "name": "line-phantom-beacon (PlatformIO)",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  // プロジェクトを /workspace にマウントする共通環境と同じレイアウト
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "remoteUser": "root",
+  // 初回は ESP32 ツールチェーンのダウンロードで 10 分以上かかる(cached で2回目は速い)
+  "postCreateCommand": "pio pkg install",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "platformio.platformio-ide",
+        "GitHub.copilot"
+      ]
+    }
+  },
+  "features": {
+    // PlatformIO Home 用に最小限のポートだけ定義(必須ではない)
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": false
+    }
+  }
+}

@@ -4,6 +4,11 @@ M5Stack AtomS3(ESP32-S3)1台で、Wi-Fi CSI による人の動き検知(ESPectre
 
 ⚠️ 本プロジェクトが生成する `pseudo_leave` / `sleep_suspected` は**完全に独自の疑似イベント**であり、LINE公式の `leave` イベントや LINEプラットフォームを偽装するものではありません。また、CSIによる動き検知は個人を識別せず「動きがない=退室」「動きがない=睡眠」も一切断定できません。
 
+## ドキュメント
+
+- [docs/handson.md](docs/handson.md) — **GitHub Codespaces でビルドして動かすハンズオン手順**(devcontainer 同梱)
+- [docs/blog.md](docs/blog.md) — ここまでの開発のまとめ(設計判断と落とし穴)
+
 ## システム構成
 
 ```
