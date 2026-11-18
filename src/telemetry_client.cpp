@@ -11,10 +11,14 @@
 #include "device_label.h"
 #include "secrets.h"
 
-// テレメトリはオプション機能: secrets.h に定義がなければ完全に無効(既定値は空文字)
+// テレメトリはオプション機能: secrets.h に定義がなけれべ個別に空文字(トークンが空なら無効)
 #if !defined(TELEMETRY_URL)
 #define TELEMETRY_URL ""
+#endif
+#if !defined(TELEMETRY_LOKI_USER)
 #define TELEMETRY_LOKI_USER ""
+#endif
+#if !defined(TELEMETRY_TOKEN)
 #define TELEMETRY_TOKEN ""
 #endif
 
@@ -68,7 +72,7 @@ String buildStreamsPayload(const char *device_label, int64_t ns,
                            const char *kind1, const String &value1,
                            const char *kind2 = nullptr, const String &value2 = String()) {
   String body = "{\"streams\":[";
-  body += "{\"stream\":{\"device\":\"";
+  body += "{\"stream\":{\"job\":\"line-phantom-beacon\",\"device\":\"";
   body += device_label;
   body += "\",\"kind\":\"";
   body += kind1;
@@ -78,7 +82,7 @@ String buildStreamsPayload(const char *device_label, int64_t ns,
   body += value1;
   body += "\"]]}";
   if (kind2 != nullptr) {
-    body += ",{\"stream\":{\"device\":\"";
+    body += ",{\"stream\":{\"job\":\"line-phantom-beacon\",\"device\":\"";
     body += device_label;
     body += "\",\"kind\":\"";
     body += kind2;
@@ -151,6 +155,10 @@ bool TelemetryClient::pushEvent(const char *type, const char *device_label, unsi
 
   const String body =
       buildStreamsPayload(device_label, ns, "event", value, "presence", presence);
+  // 失敗時は1回だけ再試行(タイムアウト/瞬断向け。それでもダメなら次のイベント時にもう一度)
+  if (postLokiBody(body)) {
+    return true;
+  }
   return postLokiBody(body);
 }
 

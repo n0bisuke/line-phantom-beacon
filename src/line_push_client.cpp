@@ -10,6 +10,14 @@
 #include "secrets.h"
 #include "device_label.h"
 
+// LINE を使わない運用(secrets からコメントアウト)でもビルドと動作が壊れないようにする
+#if !defined(LINE_CHANNEL_TOKEN)
+#define LINE_CHANNEL_TOKEN ""
+#endif
+#if !defined(LINE_USER_ID)
+#define LINE_USER_ID ""
+#endif
+
 namespace {
 // 通知テキスト(完全に独自の疑似イベント。公式の leave イベントを偽装しない)
 // push 文言。秒数は secrets.h のしきい値から自動で付く(しきい値を変えても文言が追従)。
@@ -55,13 +63,17 @@ String makeBody(const String &text) {
 }  // namespace
 
 void LinePushClient::begin() {
-  Serial.println("[line] direct push (api.line.me, サーバーレス構成)");
-  if (sizeof(LINE_CHANNEL_TOKEN) <= 1) {
-    Serial.println("[line] 警告: LINE_CHANNEL_TOKEN が未設定");
+  if (strlen(LINE_CHANNEL_TOKEN) == 0 || strlen(LINE_USER_ID) == 0) {
+    Serial.println("[line] disabled (secrets.h に LINE_CHANNEL_TOKEN/USER_ID がない:LINE push を行わない)");
+    return;
   }
+  Serial.println("[line] direct push (api.line.me, サーバーレス構成)");
 }
 
 bool LinePushClient::push(const char *type, unsigned long now) {
+  if (strlen(LINE_CHANNEL_TOKEN) == 0 || strlen(LINE_USER_ID) == 0) {
+    return false;  // LINE 無効運用。テレメトリは別経路で送られる
+  }
   if (strcmp(type, "motion_resumed") == 0) {
     type = "motion";  // 再開も「動き検知」と同じ通知
   }

@@ -79,10 +79,20 @@ void MotionSensor::begin() {
   s_sensor.onMotion(onMotionCb);
   s_sensor.onFault(onFaultCb);
 
-  // トラフィック生成: 既定の PING(ICMP)は ICMP を弾く AP(iPhone ホットスポット等)で
-  // CSI が流れなくなるため、wifi_raw(Null Data フレーム + ACK)に切り替える。
+  // トラフィック生成モードの選択(env の build_flags で上書きできる):
+  // - 既定: WIFI_RAW(Null Data + ACK。ICMP を弾くテザリングでも動く。ESP32-S3/C3 で検証済み)
+  // - PHANTOM_TRAFFIC_DNS: DNS クエリ生成(ESP32-C6 は ESPectre 3.2.0 が WIFI_RAW を
+  //   ライブラリ側で拒否するため、C6 では DNS を使う。ICMP を弾く AP でも生きる)
+  // - PHANTOM_TRAFFIC_PING: 既定の PING(ICMP 通す AP 向け)
+#if defined(PHANTOM_TRAFFIC_DNS)
+  s_sensor.config().traffic_generator_mode = espectre::TrafficGeneratorMode::DNS;
+  Serial.println("[espectre] traffic=dns (DNS クエリ生成。C6 や ICMP 制限環境向け)");
+#elif defined(PHANTOM_TRAFFIC_PING)
+  Serial.println("[espectre] traffic=ping (既定の ICMP)");
+#else
   s_sensor.config().traffic_generator_mode = espectre::TrafficGeneratorMode::WIFI_RAW;
   Serial.println("[espectre] traffic=wifi_raw (Null Data + ACK)");
+#endif
 
   if (!s_sensor.begin()) {
     Serial.println("[espectre] begin() failed (Wi-Fi STA 必須)");

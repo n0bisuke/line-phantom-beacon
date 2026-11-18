@@ -106,3 +106,17 @@ AtomS3 ビルドは検証済み版と同一サイズ(Flash 1,826,983 bytes / 54.
 - secrets.h に `TELEMETRY_LOKI_URL/USER/TOKEN` を設定しなければ完全に無効。
 - リアルタイム性: 数秒〜10秒のラグ。無料枠は「3ユーザ/50GB月(ログ)/保持10日」で本用途は余裕。
 - README にセットアップ手順を記載。全 env ビルド+ネイティブテスト 17/17 通過。
+
+
+## 2026-11-18(夜追記): XIAO ESP32-C6 対応(DNS トラフィック)
+
+- XIAO ESP32-C6 を新対応。**ESPectre 3.2.0 は C6 で WIFI_RAW をライブラリ側で拒否する**
+  (runtime_config_utils.cpp の runtime_traffic_generator_mode_supported)ため、
+  `PHANTOM_TRAFFIC_DNS` フラグで DNS クエリによるトラフィック生成を追加
+  (motion_sensor.cpp: PHANTOM_TRAFFIC_DNS/PING/WIFI_RAW を env で選択可能に)。C6 env では DNS 固定
+- C6 実機確認: `traffic=dns` で fault なし、**CSI occ 0.88-0.91 / admitted 88-91pps**(DNS でも CSI が流れる)。
+  Wi-Fi 接続/キャリブレーション完了/リセット1回。LINE push(ラベル xiao-c6)はモニタ罠でシリアル未確認だが
+  line_push_client は全ボード同一実装
+- 4MB ボードの初回書き込み: **ローカル `pio run -t upload` は bootloader+パーティション込みで焼ける**
+  (FLASH_EXTRA_IMAGES は pio remote のみ欠落)。Codespaces 経由のみ初回 merged 直書きが必要
+- docs/handson-xiao-esp32c6.md を新規作成(ボード別資料4冊目)

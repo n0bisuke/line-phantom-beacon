@@ -30,7 +30,8 @@ LINE push に加えて、イベントと稼働状態を **Grafana Cloud(無料�
 
 - [docs/handson-atoms3.md](docs/handson-atoms3.md) — **M5Stack AtomS3 ユーザー向けハンズオン**(実機検証済みの既定ボード。LCDあり)
 - [docs/handson-atom-echo.md](docs/handson-atom-echo.md) — **M5Stack ATOM Echo/Matrix/Lite ユーザー向けハンズオン**(LCDなし・LED/ビープ表示)
-- [docs/handson-xiao-esp32c3.md](docs/handson-xiao-esp32c3.md) — **XIAO ESP32-C3 ユーザー向けハンズオン**(初回はbootloader更新の統合バイナリ直書きが必要)
+- [docs/handson-xiao-esp32c3.md](docs/handson-xiao-esp32c3.md) — **XIAO ESP32-C3 ユーザー向けハンズオン**(初回は bootloader 更新の統合バイナリ直書きが必要)
+- [docs/handson-xiao-esp32c6.md](docs/handson-xiao-esp32c6.md) — **XIAO ESP32-C6 ユーザー向けハンズオン**(DNS トラフィック使用。WIFI_RAW は ESPectre が C6 で不可)
 - [docs/blog.md](docs/blog.md) — ここまでの開発のまとめ(設計判断と落とし穴)
 
 ## システム構成
@@ -58,9 +59,12 @@ LINE push に加えて、イベントと稼働状態を **Grafana Cloud(無料�
 ## 必要なハードウェア
 
 - **M5Stack AtomS3**(`m5stack-atoms3`,既定・実機検証済み。LCDに状態表示)
-- 代替ボード: **ATOM Echo**(実機検証済み, `m5stack-atom`)・**XIAO ESP32-S3**(`seeed_xiao_esp32s3`)・
-  **XIAO ESP32-C3**(実機検証済み, `seeed_xiao_esp32c3`)。各 `pio run -e <env>` で選ぶ
-  - ⚠️ 4MB ボード(C3/Echo 等)の**初回書き込みは bootloader+パーティションの更新が必要**(統合バイナリ直書き。docs/handson-xiao-esp32c3.md 参照)
+- 代替ボード: **ATOM Echo**(実機検証済み, `m5stack-atom`)・**XIAO ESP32-C3**(実機検証済み,
+  `seeed_xiao_esp32c3`)・**XIAO ESP32-C6**(CSI検知動作確認済み, `seeed_xiao_esp32c6`)・
+  **XIAO ESP32-S3**(`seeed_xiao_esp32s3`, 検証中)。各 `pio run -e <env>` で選ぶ
+  - ⚠️ 4MB ボード(C3/C6/Echo 等)の**初回書き込みは bootloader+パーティション更新が必要**。
+    ローカルの `pio run -t upload` なら自動で全部焼かれる。Codespaces+`pio remote` では
+    初回のみ統合バイナリ直書き(docs/handson-xiao-esp32c6.md 参照)
 - **2.4GHz の Wi-Fi 4 (802.11n) アクセスポイント**(5GHz専用では CSI が取れない)
 - AtomS3 と AP を同一ネットワークに接続(ESPectre はゲートウェイへのトラフィックで CSI を汲む)
 
