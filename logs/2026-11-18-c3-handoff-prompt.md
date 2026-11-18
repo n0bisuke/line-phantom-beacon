@@ -23,7 +23,7 @@ C3 は ESPectre を含む本プロジェクトのファームで正常起動す�
 
 ## 引き継ぎタスク(checklist)
 
-1. **[未完] C3 実機の Wi-Fi/CSI 検証**: 本日はテザリング(REDACTED_SSID)が見えず occ=0 で終了。
+1. **[未完] C3 実機の Wi-Fi/CSI 検証**: 本日はテザリング(SSIDは secrets.h 登録値)が見えず occ=0 で終了。
    テザリング ON の状態で `pio remote device monitor` にて
    `[wifi] connected` → `[csi] admitted_pps=〜90 occ=0.9` → 手を振って `[event] motion`
    → LINE push を確認(LINE 無料枠 200通/月は消費注意、429 なら既知)

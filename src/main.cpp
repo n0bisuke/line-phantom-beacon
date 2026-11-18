@@ -8,6 +8,8 @@
 #include "config.h"
 #include "display.h"
 #include "line_push_client.h"
+#include "telemetry_client.h"
+#include "device_label.h"
 #include "motion_sensor.h"
 #include "phantom_events.h"
 #include "secrets.h"
@@ -17,6 +19,7 @@ namespace {
 MotionSensor s_motion;
 StatusDisplay s_display;
 LinePushClient s_line;
+TelemetryClient s_telemetry;
 // 疑似イベント状態機(純C++, ネイティブテスト済)。しきい値は secrets.h。
 phantom::EventState s_events(PSEUDO_LEAVE_MS, PSEUDO_CONTINUED_MS, SLEEP_SUSPECTED_MS);
 bool s_last_ready = false;
@@ -49,6 +52,10 @@ void onPseudoEvent(phantom::Event event, unsigned long now) {
     return;
   }
   Serial.printf("[event] %s (%lu ms)\n", type, now);
+  // テレメトリ(Grafana Cloud Loki)は LINE とは独立。LINE が 429 でも全記録が残る
+  if (s_telemetry.pushEvent(type, DEVICE_LABEL, now)) {
+    Serial.println("[telemetry] event posted");
+  }
   if (s_motion.wifiConnected()) {
     s_line.push(type, now);
   } else {
@@ -122,6 +129,7 @@ void setup() {
   s_motion.begin();
   s_display.showBootStage(2, "RUN");
   s_line.begin();
+  s_telemetry.begin();
   s_last_status_ms = millis();
   s_last_display_ms = millis();
 }
@@ -130,6 +138,7 @@ void loop() {
   s_motion.loop();
   const unsigned long now = millis();
   feedEvents(now);
+  s_telemetry.heartbeat(now, DEVICE_LABEL, s_motion.wifiConnected(), s_motion.ready());
   logNextStatus(now);
   updateDisplay(now);
 }

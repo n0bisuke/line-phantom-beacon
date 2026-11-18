@@ -8,17 +8,7 @@
 #include "config.h"
 #include "line_root_ca.h"
 #include "secrets.h"
-
-// 通知に付ける端末ラベル。env の build_flags で PHANTOM_DEVICE_ID を与えると
-// secrets.h の DEVICE_ID より優先する(同じ secrets.h を複数ボードで使い分けるため)。
-// 例: m5stack-atom env → -DPHANTOM_DEVICE_ID=atom-echo(マクロ文字列化で "atom-echo" になる)
-#if defined(PHANTOM_DEVICE_ID)
-#define _PH_STRIFY(x) #x
-#define PH_STRIFY(x) _PH_STRIFY(x)
-#define DEVICE_LABEL PH_STRIFY(PHANTOM_DEVICE_ID)
-#else
-#define DEVICE_LABEL DEVICE_ID
-#endif
+#include "device_label.h"
 
 namespace {
 // 通知テキスト(完全に独自の疑似イベント。公式の leave イベントを偽装しない)

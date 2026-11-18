@@ -4,6 +4,28 @@ M5Stack AtomS3(ESP32-S3)1台で、Wi-Fi CSI による人の動き検知(ESPectre
 
 ⚠️ 本プロジェクトが生成する `pseudo_leave` / `sleep_suspected` は**完全に独自の疑似イベント**であり、LINE公式の `leave` イベントや LINEプラットフォームを偽装するものではありません。また、CSIによる動き検知は個人を識別せず「動きがない=退室」「動きがない=睡眠」も一切断定できません。
 
+## モニタリング: Grafana Cloud へのテレメトリ送信(オプション)
+
+LINE push に加えて、イベントと稼働状態を **Grafana Cloud(無料枠)の Loki** に送り、ダッシュボードで
+時系列監視できます。LINE の月200通の上限に達して 429 になっても、テレメトリ側には**全イベントが
+記録される**(リアルタイム性: 数秒〜10秒のラグ)。
+
+**セットアップ**:
+
+1. [grafana.com](https://grafana.com/) で無料アカウントを作成(ユーザー3人/ログ50GB月/保持10日)
+2. Stack 接続情報から Loki の push URL を控える: `https://logs-prod-XXX.grafana.net/loki/api/v1/push`
+3. grafana.com → **Security → Service accounts → New service account**(role: Editor)→
+   **Add service account token** でトークン発行
+4. `include/secrets.h` に追記(`TELEMETRY_LOKI_URL` / `TELEMETRY_LOKI_USER` = インスタンスID / `TELEMETRY_TOKEN`)
+   未設定なら完全に無効(LINE のみの運用)
+5. リビルドして焼く → シリアルに `[telemetry] Loki push enabled` と出る
+6. Grafana で **Explore → Loki → クエリ** `{device="<ラベル>"}` と打つとイベント/状態が見られる。
+   在室の状態タイムラインは `presence=` を、稼働監視は `status ` (heartbeat) を使う
+
+**注意**: TLS 検証は `src/telemetry_root_ca.h`(DigiCert Global G2 系)で行う。スタックの issuer が
+違う場合は `openssl s_client -showcerts` で取得し直して差し替える。SNTP 時刻同期を初回イベント時に
+行うため、起動直後の最初のイベントは数秒遅れて送信されることがある。
+
 ## ドキュメント
 
 - [docs/handson-atoms3.md](docs/handson-atoms3.md) — **M5Stack AtomS3 ユーザー向けハンズオン**(実機検証済みの既定ボード。LCDあり)
