@@ -70,10 +70,10 @@ AtomS3 ビルドは検証済み版と同一サイズ(Flash 1,826,983 bytes / 54.
 - LINE push: 無料プラン月200通の上限に到達し **429**。毎月1日リセット(handson に注意書き済み)
 - ESPectre への C3 バグ報告(未実施。最小再現コードを整理して報告が望ましい)
 
-**ドキュメント更新**
-- `docs/handson.md`: ホスト事前準備(pio + uv)、LINE 200通注意、しきい値変更のお題(secrets.h 編集)、
-  ボード表の更新(C3 削除)
-- `docs/handson-atom-echo.md`: 新規作成(Echo 固有の手順・ビープ/LED仕様・書き込みフロー・Matrix/Lite 補足)
+**ドキュメント更新**(資料はボード別に分割: handson.md は廃止)
+- `docs/handson-atoms3.md` / `docs/handson-atom-echo.md`: ボード別ハンズオン(Codespaces・ローカル完結ルート両対応)。
+  ホスト事前準備(pio + uv)、LINE 200通注意、しきい値変更のお題(secrets.h 編集)、ボード表
+- 検収基準・トラブルシュートは各ボード資料へ集約
 
 ### 備考: 診断で重要だった事実
 - `rst:0x3 (RTC_SW_SYS_RST)` = esp_restart。ペニック印刷すら出ない早期死

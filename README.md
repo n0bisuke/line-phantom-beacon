@@ -6,8 +6,8 @@ M5Stack AtomS3(ESP32-S3)1台で、Wi-Fi CSI による人の動き検知(ESPectre
 
 ## ドキュメント
 
-- [docs/handson.md](docs/handson.md) — **GitHub Codespaces でビルドして動かすハンズオン手順**(devcontainer 同梱)
-- [docs/handson-atom-echo.md](docs/handson-atom-echo.md) — **M5Stack ATOM Echo 版**(LCDなし・初回のパーティション直書きなど Echo 固有の手順)
+- [docs/handson-atoms3.md](docs/handson-atoms3.md) — **M5Stack AtomS3 ユーザー向けハンズオン**(実機検証済みの既定ボード。LCDあり)
+- [docs/handson-atom-echo.md](docs/handson-atom-echo.md) — **M5Stack ATOM Echo/Matrix/Lite ユーザー向けハンズオン**(LCDなし・LED/ビープ表示)
 - [docs/blog.md](docs/blog.md) — ここまでの開発のまとめ(設計判断と落とし穴)
 
 ## システム構成

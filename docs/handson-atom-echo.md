@@ -1,11 +1,26 @@
-# ハンズオン: M5Stack ATOM Echo で line-phantom-beacon を動かす
+# ハンズオン: M5Stack ATOM Echo で line-phantom-beacon を動かす(GitHub Codespaces / ローカル PC 対応)
 
 ATOM Echo は**LCDが無い・クラシックESP32(PICO-D4 4MB)・圧電スピーカー付き**のデバイスです。
-本体手順は [handson.md](handson.md) を参照。この文書は **ATOM Echo 固有の違い**だけを記載します。
+この文書だけで完結します(AtomS3 用は [handson-atoms3.md](handson-atoms3.md))。
 
-> 作業環境はどちらでもOK: **Codespaces/コンテナ**(→ handson.md 本編)にも
-> **ローカルPC完結**(→ handson.md「ローカルPCだけで完結する場合」)にも対応。
-> ビルドコマンド(`pio run -e m5stack-atom`)とテストは共通で、**書き込みだけ方式が違う**(Step 2-3)。
+> 作業環境はどちらでもOK: **Codespaces** でも **ローカルPC完結** でも同じコマンドで進めます。
+> ビルド(`pio run -e m5stack-atom`)とテストは共通、**初回書き込みだけ統合バイナリ直書き**(Step 2)。
+
+## 完成イメージ
+
+1. Echo が Wi-Fi の CSI を解析して動きを検知(CSI 検知・疑似イベント・LINE push は**どのボードでも同一**)
+2. 検知直後 → 🏃 push(文末に **`(atom-echo)`**ラベル)
+3. 10秒無動作 → 🚪 push / 20秒 継続push / 30秒 😴 push(以降なし)
+4. 内蔵 LED の状態色 + シリアルログで状態確認(LCD の代わり)
+
+## 前提(必要なもの)
+
+| 用意するもの | 備考 |
+|---|---|
+| M5Stack ATOM Echo | ATOM Matrix / Lite も同じ `m5stack-atom` env で動く(下記補足参照) |
+| Wi-Fi(2.4GHz) | スマホのテザリング可。**5GHz は CSI が取れない**ので 2.4GHz に固定 |
+| LINE Developers アカウント | Messaging API チャネル + 長期チャネルアクセストークン + 自分のユーザーID(`U`で始まる) |
+| GitHub アカウント / USB の繋がる PC | Codespaces を使う場合 / どちらにせよ初回直書きには必要 |
 
 ## AtomS3 と何が違うか
 
@@ -55,11 +70,32 @@ ATOM Echo は**LCDが無い・クラシックESP32(PICO-D4 4MB)・圧電スピ�
   Matrix/Lite 用には `PHANTOM_SPEAKER_PIN` を付けない方が安全)
 - 5×5 RGB LED マトリクスがあるため、状態表示を LED に置き換える実装が有望(未実装)
 
-## Step 1: ビルド(Codespaces でもローカルでも同じ)
+## Step 1: 秘密情報 → ビルド(Codespaces でもローカルでも同じ)
+
+**secrets.h**(Wi-Fi・LINEトークン・宛先。コミットされない。編集は最初の1回 + しきい値変更時):
 
 ```bash
-pio run -e m5stack-atom
+cp include/secrets.h.example include/secrets.h
+your-editor include/secrets.h
 ```
+
+| 定義 | 値 |
+|---|---|
+| `WIFI_CREDENTIALS` | `{ "SSID", "パスワード" }`(2.4GHz。カンマ区切りで複数AP登録可) |
+| `LINE_CHANNEL_TOKEN` | 長期チャネルアクセストークン(172字) |
+| `LINE_USER_ID` | 自分のユーザーID(`U` で始まる34字) |
+
+> 10/20/30秒のしきい値もここで変えられる(`PSEUDO_LEAVE_MS` 等。**push 文言の秒数も自動で追従**)
+> 変更は secrets.h 内なので git に載らない。トークンを push したら LINE コンソールで即ローテーション
+
+ビルドとテスト:
+
+```bash
+pio run -e m5stack-atom     # Echo 用ファーム(Flash 44.8%)
+pio test -e native          # 状態遷移テスト(ボード不要)
+```
+
+Codespaces の場合は初回ビルドでツールチェーン約3GBのダウンロード(10分+)。
 
 ## Step 2: 初回のみ「統合バイナリ」をホストから直書き
 
@@ -125,9 +161,10 @@ pio device monitor --port /dev/cu.usbserial-XXXXXXXX
 5. 静止 → 10秒で `[event] pseudo_leave` / 20秒 continued / 30秒 sleep_suspected、以降 push なし
 6. 再び動かす → `[event] motion` に復帰
 
-> ⚠️ **LINE 無料プランは月200通まで**。検証サイクルで5〜10通ずつ消費し、超えると
-> `[line] push ... failed: 429`(トークンは生きているが上限到達)。枠は毎月1日リセット。
-> 詳細は [handson.md](handson.md) の「LINE 無料プランの月200メッセージに注意」を参照。
+> ⚠️ **LINE 無料プランは月200通まで**(1チャネルあたり)。このハンズオンは push 自体を検証するので
+> **1サイクルで5〜10通ずつ消費**します。超えると `[line] push ... failed: 429`
+> (**トークンは生きているが上限到達**)。枠は**毎月1日リセット**。急ぎなら開発用チャネルを分ける。
+> 使用状況は LINE Developers コンソール → 対象チャネル → 「Messaging API設定」で確認できる。
 
 CSI の目安(検収基準):
 
@@ -145,7 +182,7 @@ CSI の目安(検収基準):
 | `Unable to verify flash chip connection` で書き込み失敗 | ボーレートが高すぎる。`--baud` 指定を外して既定115200で |
 | ポート名が `cu.usbmodem…` でない | 正常(Echo は USB-UART ブリッジなので `cu.usbserial-…`) |
 | ビープが鳴らない | スピーカーは GPIO25 **DAC駆動**(Class-Dアンプ)。LED の PWM では鳴らないため本プロジェクトでは DAC 出力を実装済み。`[display] speaker via DAC` が出てるか確認 |
-| push が来ない(429) | **月200通上限**。毎月1日リセット。`handson.md` を参照 |
+| push が来ない(429) | **月200通上限**。毎月1日リセット。上記「Step 6」の注意を参照 |
 | 検知が常に動かない | `occ` を確認。Echo と AP の距離・人影を変えてみる |
 
 ## Codespaces からの書き込み方式の比較(参考)

@@ -122,7 +122,7 @@ AtomS3 は 128x64 の小さな LCD。Font0 の8px では小さすぎるので:
 2. **「擬似イベントを何段階にするか」は通知の設計次第で使いやすさが全く変わる**。最も重要なのは「もう黙る」タイミングも設計すること
 3. **実機検証のフィードバック(表示のズレ、通知の連発)が設計を良くした**。状態機は純C++に切り出してテストすることで、このループが早く回った
 
-この一連の手順を GitHub Codespaces で試せるハンズオンとしてまとめたのが [docs/handson.md](handson.md) です。
+この一連の手順を試せるハンズオンをボード別にまとめています: [M5Stack AtomS3 版](handson-atoms3.md) / [M5Stack ATOM Echo 版](handson-atom-echo.md)(GitHub Codespaces・ローカルPC両対応)。
 
 ---
 
