@@ -1,5 +1,28 @@
 #include "display.h"
 
+#ifdef PHANTOM_NO_DISPLAY
+// ---------------------------------------------------------------
+// LCD の無いボード (XIAO ESP32-C3 / S3 系など) 用のプレースホルダ。
+// 描画 API はそのまま使い、起動ステージだけをシリアルに出す。
+// 状態表示はシリアルログ([status] / [csi] / [event])で確認する。
+// ---------------------------------------------------------------
+void StatusDisplay::begin() {
+  Serial.println("[display] no LCD on this board (PHANTOM_NO_DISPLAY, 状態はシリアルログで確認)");
+}
+
+void StatusDisplay::showBootStage(int stage, const char *label) {
+  Serial.printf("[display] stage %d: %s\n", stage, label ? label : "");
+}
+
+void StatusDisplay::showMessage(const char *label) {
+  Serial.printf("[display] message: %s\n", label ? label : "");
+}
+
+void StatusDisplay::update(const DisplayStatus &s) {
+  // 250ms 間隔で呼ばれるためここでは出力しない([status] ログが担う)
+}
+
+#else  // ---- LCD あり(AtomS3 等。M5Unified 使用) ----
 #include <M5Unified.h>
 
 // 128x64 / font0 8x16px → 4行 x 16文字
@@ -114,3 +137,4 @@ void StatusDisplay::update(const DisplayStatus &s) {
   }
   M5.Display.setTextSize(1);
 }
+#endif  // PHANTOM_NO_DISPLAY

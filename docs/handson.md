@@ -22,6 +22,20 @@ AtomS3 + Wi-Fi電波(CSI)で「動きを検知 → LINE push」する疑似ビ�
 
 手元が AtomS3 で Wi-Fi が自宅 LAN の場合、書き込み直しは「ホストPCに PlatformIO+ツールチェーン」でも「`pio remote` 経由」でもOK。この手順はホストが軽い **`pio remote`** 方式で統一します。
 
+## Step 0: ボードを決める(複数ボード対応)
+
+AtomS3 以外のボードにも対応しています。ビルドターゲットは `pio run -e <env>` / `pio run -t upload -e <env>` で選びます。
+
+| env(`-e`) | ボード | LCD | フラッシュ | 備考 |
+|---|---|---|---|---|
+| `m5stack-atoms3`(既定) | M5Stack AtomS3 | あり | 8MB | LCD状態表示あり・実機検証済み |
+| `seeed_xiao_esp32s3` | XIAO ESP32-S3(+Plus/Sense) | なし | 8MB | 状態はシリアルログで確認 |
+
+- ディスプレイなしボードはヘッドレスモード(`PHANTOM_NO_DISPLAY`)になり、起動ステージと状態を**シリアルログで確認**します
+- ⚠️ **XIAO ESP32-C3 は未対応**: ESPectre 3.2.0 × C3(Arduino core 3.3.12)で起動早期にペニックする既知問題
+  (センサーの有無・トラフィック生成モードに関係なく再現。詳細は `logs/2026-11-18-development-log.md`)
+- その他のボードも `platformio.ini` に env を足すだけで基本OK(M5Stack 系は LCD ありにする)
+
 ## Step 1: リポジトリを fork → Codespaces を開く
 
 1. このリポジトリを GitHub で fork / もしくは自分の organization にコピー
@@ -57,7 +71,8 @@ push テキストや端末名は `DEVICE_ID`、10/20/30秒のしきい値は `PS
 ## Step 3: ビルドとテスト
 
 ```bash
-pio run              # ファームウェアビルド(2回目以降は速い)
+pio run              # ファームウェアビルド(既定 = m5stack-atoms3)
+                     # 他ボード: pio run -e seeed_xiao_esp32c3 / -e seeed_xiao_esp32s3
 pio test -e native   # 状態遷移・BEACONフレームのユニットテスト(ボード不要)
 ```
 
@@ -88,7 +103,7 @@ Codespaces のターミナルで:
 ```bash
 pio account login          # Step 4 と同じ PlatformIO アカウントで(対話でOK)
 pio remote agent list      # Step 4 の agent が見えるか確認
-pio remote run -t upload   # ビルド済みファームを書き込み
+pio remote run -t upload   # ビルド済みファームを書き込み(他ボードは -e <env> を追加)
 pio remote device monitor  # シリアルモニタ(Ctrl+C で終了)
 ```
 
@@ -103,6 +118,8 @@ pio remote device monitor  # シリアルモニタ(Ctrl+C で終了)
 
 ## Step 6: 実機で確認
 
+LCD あり(AtomS3)の場合:
+
 1. 起動 → LCD に `BOOT` → `WIFI` → `RUN` の段階番号
 2. 黄色 **`CALIB`** が約30秒(途中で動かさない。これで「何もない部屋」の基準を作る)
 3. 正常監視: 黒背景の秒数カウント。上段 `W:on R1 mv:...`
@@ -114,6 +131,13 @@ pio remote device monitor  # シリアルモニタ(Ctrl+C で終了)
    - **30秒** → 😴 push + LCD 紫 + 上段 `SLEEP`(カウントは延長戦で続く)
    - 30秒以降は push しない
 6. 再び動かす → 緑 `MOVE` に復帰
+
+LCD なし(XIAO ESP32-S3 系)の場合、同じ内容を**シリアルログ**で確認する:
+
+1. 起動直後に `[display] stage 0: BOOT → 1: WIFI → 2: RUN` が流れる(LCD の代わり)
+2. 黄 `CALIB` の代わりは `ready=0` の期間(約30秒、動かさない)
+3. `[espectre] ready (キャリブレーション完了)` → その後の `[motion] edge` で動きを確認
+4. `[event]` / `[line] pushed` の流れは全ボード共通(下の表を検収基準にする)
 
 シリアルログの見所:
 
@@ -155,6 +179,22 @@ esptool --chip esp32s3 --baud 921600 write_flash 0x0 merged-firmware.bin
 ```
 
 Codespaces で merge しておいて、`merged-firmware.bin` を PC に落としてから書くという使い方も可能です。
+
+## ボード別の検収基準(複数ボードでの検証用)
+
+各ボードで同じチェックを通す。全部シリアルログで確認できる:
+
+| # | チェック | 期待されるログ |
+|---|---|---|
+| 1 | Wi-Fi 接続 | `[wifi] connected channel=8 rssi=-56` |
+| 2 | CSI が流れる | `[csi] admitted_pps=80〜100 occ=0.8以上` |
+| 3 | キャリブレーション完了 | `[espectre] ready` |
+| 4 | 動き検知 | 手を振る → `[motion] edge` / `[event] motion` / `[line] pushed motion` |
+| 5 | 10段階 | 10秒後 `[event] pseudo_leave`(LCDなら暗青+LEAVE) |
+| 6 | 20/30段階 | 20秒 `pseudo_leave_continued` / 30秒 `sleep_suspected`、以降 `[event]` なし |
+| 7 | 検知復帰 | 手を振る → `[event] motion`、LCDなら緑に復帰 |
+
+C3 など未検証ボードで `occ` が 0 のままなら、ボードによって CSI の実装差(802.11n / チャネル)に起因する可能性あり → `docs/blog.md` の「CSI が流れない」節と同じ切り分けをする。
 
 ## トラブルシュートまとめ
 
