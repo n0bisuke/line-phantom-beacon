@@ -66,3 +66,11 @@
 
 ### 作業記録
 - セッション単位の作業記録は `logs/` ディレクトリに日付入りで残す(例: `logs/2026-11-12-development-log.md`)
+
+## Git 操作の分担 (2026-11-18 確立)
+
+- **コンテナ側(Claude Code)は git の実操作(commit / push / pull / merge / rebase / reset / add など)を行わない**。設定ファイル `.claude/settings.local.json` の permissions.deny で自動ブロック済み
+- Claude ができるのは**読み取り専用**の調査(status / log / diff / show / grep / ls-files)と、コミットメッセージやコミット対象ファイルの一覧提案まで
+- 実際の commit / push は**ユーザーがホスト側で実行する**。Claude は「コミットお願いします(候補メッセージを添えて)」で伝える
+- 履歴を書き換える操作(rebase / filter-branch / force push など)は常にユーザーが行う。Claude 側での pull もしない(pull はホスト側のみ)
+- 背景: 2026-11-18 に Claude が履歴書き換え+SSH不在環境での push 回線を混在させ、pull と force push の順序が乱れて衝突が発生した事故の再発防止
