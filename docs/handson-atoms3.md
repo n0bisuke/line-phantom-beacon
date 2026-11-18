@@ -44,6 +44,10 @@ cd line-phantom-beacon
 pio run -e native   # ツールチェーン初回取得込みで動作確認(10分+)
 ```
 
+
+> 注: `platformio.ini` の `default_envs`(既定 = AtomS3)は**書き換え不要**です。
+> コマンドに `-e <自分のenv>` を付ければ常にそのボードでビルド/書き込みされます。
+
 ## Step 2: 秘密情報の設定(secrets.h)
 
 ```bash

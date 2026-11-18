@@ -60,6 +60,10 @@ pio test -e native               # ロジックのユニットテスト(ボー�
 - LINE push には **`(xiao-c3)`** ラベルが付く(C3 env の `PHANTOM_DEVICE_ID=xiao-c3`)
 - LINE 無料プランは **月200通**。検証で消費し、超えると `429`(毎月1日リセット)
 
+
+> 注: `platformio.ini` の `default_envs`(既定 = AtomS3)は**書き換え不要**です。
+> コマンドに `-e <自分のenv>` を付ければ常にそのボードでビルド/書き込みされます。
+
 ## Step 2: 初回のみ「統合バイナリ」をホストから直書き
 
 1. Codespaces/コンテナ内で統合バイナリを作成(bootloader+partitions+app):
