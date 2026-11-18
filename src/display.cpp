@@ -121,8 +121,69 @@ void ledSet(unsigned, unsigned, unsigned) {}
 
 #endif  // PHANTOM_LED_PIN
 
+// 単色オンボード LED(XIAO ESP32-C3 の GPIO3 など)。多色表示はできず、
+// 点滅パターンで状態を表す。アクティブ LOW(LOW で点灯)のボードが多いことに注意。
+#ifdef PHANTOM_GPIO_LED_PIN
+
+enum class GpioLedMode {
+  On,          // 常時点灯(監視中)
+  Off,         // 消灯(静止=LEAVE/SLEEP。うるさくしない)
+  SlowBlink,   // 1秒周期(キャリブレーション中)
+  FastBlink,   // 150ms周期(動き検知中/Wi-Fiなし)
+};
+
+static bool s_gpio_led_ready = false;
+static GpioLedMode s_gpio_led_mode = GpioLedMode::On;
+
+static void gpioLedInit() {
+  if (!s_gpio_led_ready) {
+    pinMode(PHANTOM_GPIO_LED_PIN, OUTPUT);
+    s_gpio_led_ready = true;
+  }
+}
+
+static void gpioLedSet(GpioLedMode mode) {
+  gpioLedInit();
+  s_gpio_led_mode = mode;
+}
+
+static void gpioLedTick() {
+  if (!s_gpio_led_ready) {
+    return;
+  }
+  bool lit;
+  const unsigned long t = millis();
+  switch (s_gpio_led_mode) {
+    case GpioLedMode::On:
+      lit = true;
+      break;
+    case GpioLedMode::Off:
+      lit = false;
+      break;
+    case GpioLedMode::SlowBlink:
+      lit = (t / 1000UL) % 2 == 0;
+      break;
+    case GpioLedMode::FastBlink:
+    default:
+      lit = (t / 150UL) % 2 == 0;
+      break;
+  }
+  // active LOW: LOW で点灯するボード(XIAO ESP32-C3)向けの反転
+  digitalWrite(PHANTOM_GPIO_LED_PIN, lit ? LOW : HIGH);
+}
+
+#else
+
+enum class GpioLedMode { On, Off, SlowBlink, FastBlink };
+static void gpioLedInit() {}
+static void gpioLedSet(GpioLedMode) {}
+static void gpioLedTick() {}
+
+#endif  // PHANTOM_GPIO_LED_PIN
+
 void StatusDisplay::begin() {
   beepInit();
+  gpioLedSet(GpioLedMode::On);
   Serial.println("[display] no LCD on this board (PHANTOM_NO_DISPLAY, 状態はシリアルログで確認)");
 }
 
@@ -130,6 +191,7 @@ void StatusDisplay::showBootStage(int stage, const char *label) {
   Serial.printf("[display] stage %d: %s\n", stage, label ? label : "");
   beepOnce(800 + stage * 200, 70);        // BOOT→WIFI→RUN と音程が上がる
   ledSet(0x30, 0x30, 0x30);               // 起動中は白(dim)
+  gpioLedSet(GpioLedMode::On);            // 単色 LED があるボードでは起動中=点灯
 }
 
 void StatusDisplay::showMessage(const char *label) {
@@ -156,26 +218,33 @@ void StatusDisplay::update(const DisplayStatus &s) {
     }
   }
 
-  // LED の状態色(LCD ありボードの配色と合わせてある)
+  // 単色 LED と多色 LED の状態(LCD ありボードの配色に合わせる)
   if (!s.wifi) {
+    gpioLedSet(GpioLedMode::FastBlink);
     ledSet(0x60, 0x18, 0x00);     // Wi-Fi 切断: オレンジ
   } else if (!s.ready) {
+    gpioLedSet(GpioLedMode::SlowBlink);
     ledSet(0x00, 0x10, 0x50);     // キャリブレーション中: 青(動かさない)
   } else if (s.motion) {
+    gpioLedSet(GpioLedMode::FastBlink);
     ledSet(0x60, 0x00, 0x00);     // 動き検知中: 赤
   } else {
     switch (s.state) {
       case 2:
-        ledSet(0x30, 0x00, 0x40); // 寝落ち(紫)
+        gpioLedSet(GpioLedMode::Off);  // LEAVE/SLEEP は単色 LED を消す(静寂)
+        ledSet(0x30, 0x00, 0x40);      // 寝落ち(紫)
         break;
       case 1:
-        ledSet(0x00, 0x30, 0x30); // 疑似 leave: 深いシアン
+        gpioLedSet(GpioLedMode::Off);
+        ledSet(0x00, 0x30, 0x30);      // 疑似 leave(シアン)
         break;
       default:
-        ledSet(0x00, 0x28, 0x00); // 正常監視中: 緑(dim)
+        gpioLedSet(GpioLedMode::On);   // 正常監視中
+        ledSet(0x00, 0x28, 0x00);      // 正常監視中: 緑(dim)
         break;
     }
   }
+  gpioLedTick();
 }
 
 #else  // ---- LCD あり(AtomS3 等。M5Unified 使用) ----
