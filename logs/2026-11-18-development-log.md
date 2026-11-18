@@ -120,3 +120,7 @@ AtomS3 ビルドは検証済み版と同一サイズ(Flash 1,826,983 bytes / 54.
 - 4MB ボードの初回書き込み: **ローカル `pio run -t upload` は bootloader+パーティション込みで焼ける**
   (FLASH_EXTRA_IMAGES は pio remote のみ欠落)。Codespaces 経由のみ初回 merged 直書きが必要
 - docs/handson-xiao-esp32c6.md を新規作成(ボード別資料4冊目)
+
+- docs/readme.md を新規作成: 4 ボード(AtomS3/Echo/C3/C6)実機検証の注意点・落とし穴の実記録。
+  README を全面書き換え(4 ボード対応・書き込みの要点・LED/トラフィックモード仕様・検証状況表)。
+  C6 は LINE push 到達をユーザーが LINE アプリで確認済み → 4 ボード対応完了。
