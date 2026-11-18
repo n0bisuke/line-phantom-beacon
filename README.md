@@ -137,7 +137,7 @@ AP のうち最も RSSI の強いものに切り替わる:
 ```cpp
 #define WIFI_CREDENTIALS \
   { "home-ssid", "password" }, \
-  { "REDACTED_SSID", "pass" }   // 2.4GHz。テザリングは「接続に使用するWi-Fi設定」を 2.4GHz にしてから
+  { "home-ssid-2", "pass" }  // 外テザリング等の 2.4GHz 予備   // 2.4GHz。テザリングは「接続に使用するWi-Fi設定」を 2.4GHz にしてから
 ```
 
 ## ESPectre のキャリブレーション方法
