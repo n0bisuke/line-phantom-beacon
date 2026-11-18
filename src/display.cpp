@@ -2,16 +2,134 @@
 
 #ifdef PHANTOM_NO_DISPLAY
 // ---------------------------------------------------------------
-// LCD の無いボード (XIAO ESP32-C3 / S3 系など) 用のプレースホルダ。
+// LCD の無いボード (XIAO S3、M5Stack ATOM Echo 系など) 用のプレースホルダ。
 // 描画 API はそのまま使い、起動ステージだけをシリアルに出す。
 // 状態表示はシリアルログ([status] / [csi] / [event])で確認する。
+// さらに PHANTOM_SPEAKER_PIN (<GPIO番号) が定義されたボードではビープ音で状態を報せる:
+//   - 起動ステージごとに音程の上がる短いビープ
+//   - キャリブレーション中は数秒ごとに低いビープ(進捗)
+//   - キャリブレーション完了で上昇音
 // ---------------------------------------------------------------
+#ifdef PHANTOM_SPEAKER_PIN
+
+// ビープ。ATOM Echo のスピーカーは Class-D アンプを DAC(GPIO25) で駆動する構成のため
+// LEDC の PWM 方形波では鳴らない(2026-11-18 実機確認)。そこで DAC 出力 + esp_timer で
+// 方形波を発生させる。update() が 250ms 間隔のため停止は最長 250ms 遅れる(十分鳴る長さ)。
+#if PHANTOM_SPEAKER_PIN == 25
+#define PH_DAC_CHANNEL DAC_CHANNEL_1
+#else
+#define PH_DAC_CHANNEL DAC_CHANNEL_2
+#endif
+
+#include "driver/dac_oneshot.h"
+#include "esp_timer.h"
+
+static dac_oneshot_handle_t s_dac = nullptr;
+static esp_timer_handle_t s_tone_timer = nullptr;
+static bool s_tone_level = false;
+static unsigned long s_tone_until_ms = 0;
+
+static void ph_tone_tick(void * /*unused*/) {
+  s_tone_level = !s_tone_level;
+  dac_oneshot_output_voltage(s_dac, s_tone_level ? 150 : 0);
+}
+
+void toneTimerStart(int freq) {
+  if (s_tone_timer != nullptr) {
+    esp_timer_stop(s_tone_timer);
+    esp_timer_delete(s_tone_timer);
+    s_tone_timer = nullptr;
+  }
+  s_tone_level = false;
+  const esp_timer_create_args_t args = {
+      .callback = &ph_tone_tick, .name = "ph_beep",
+  };
+  ESP_ERROR_CHECK(esp_timer_create(&args, &s_tone_timer));
+  ESP_ERROR_CHECK(esp_timer_start_periodic(s_tone_timer, 1000000ULL / (2 * freq)));
+}
+
+void toneStop() {
+  if (s_tone_timer != nullptr) {
+    esp_timer_stop(s_tone_timer);
+    esp_timer_delete(s_tone_timer);
+    s_tone_timer = nullptr;
+  }
+  dac_oneshot_output_voltage(s_dac, 0);
+}
+
+void beepInit() {
+  const dac_oneshot_config_t cfg = {.chan_id = PH_DAC_CHANNEL};
+  const esp_err_t err = dac_oneshot_new_channel(&cfg, &s_dac);
+  if (err == ESP_OK) {
+    dac_oneshot_output_voltage(s_dac, 0);
+    Serial.printf("[display] speaker via DAC GPIO%d (ビープ通知あり)\n", (int)PHANTOM_SPEAKER_PIN);
+  } else {
+    Serial.printf("[display] DAC init failed: %d (ビープなし)\n", (int)err);
+  }
+}
+
+// 短いビープを鳴らし、その場で確実に止める(起動ステージ用。setup 中の安全なブロック)
+void beepOnce(int freq, int ms) {
+  if (s_dac == nullptr) {
+    return;
+  }
+  toneTimerStart(freq);
+  delay(ms);
+  toneStop();
+}
+
+// update() の 250ms リズム内で完結する非同期ビープ
+void beepLater(int freq) {
+  if (s_dac == nullptr) {
+    return;
+  }
+  toneTimerStart(freq);
+  s_tone_until_ms = millis() + 60;
+}
+
+void beepTick() {
+  if (s_dac == nullptr) {
+    return;
+  }
+  if (s_tone_until_ms != 0 && (long)(millis() - s_tone_until_ms) >= 0) {
+    toneStop();
+    s_tone_until_ms = 0;
+  }
+}
+
+#else
+
+void beepInit() {}
+void beepOnce(int, int) {}
+void beepLater(int) {}
+void beepTick() {}
+
+#endif  // PHANTOM_SPEAKER_PIN
+
+// 内蔵 LED (SK6812/WS2812 系)。Echo は 1 個 (GPIO27)。neopixelWrite は
+// RMT ベースなのでブロックしない(1度に~µsオーダ)。
+#ifdef PHANTOM_LED_PIN
+
+// 暗く保つ(Echo の LED は非常に明るい)。全色で最大 127/255 まで。
+static void ledSet(unsigned r, unsigned g, unsigned b) {
+  neopixelWrite(PHANTOM_LED_PIN, (r & 0x7F), (g & 0x7F), (b & 0x7F));
+}
+
+#else
+
+void ledSet(unsigned, unsigned, unsigned) {}
+
+#endif  // PHANTOM_LED_PIN
+
 void StatusDisplay::begin() {
+  beepInit();
   Serial.println("[display] no LCD on this board (PHANTOM_NO_DISPLAY, 状態はシリアルログで確認)");
 }
 
 void StatusDisplay::showBootStage(int stage, const char *label) {
   Serial.printf("[display] stage %d: %s\n", stage, label ? label : "");
+  beepOnce(800 + stage * 200, 70);        // BOOT→WIFI→RUN と音程が上がる
+  ledSet(0x30, 0x30, 0x30);               // 起動中は白(dim)
 }
 
 void StatusDisplay::showMessage(const char *label) {
@@ -19,7 +137,45 @@ void StatusDisplay::showMessage(const char *label) {
 }
 
 void StatusDisplay::update(const DisplayStatus &s) {
-  // 250ms 間隔で呼ばれるためここでは出力しない([status] ログが担う)
+  beepTick();
+
+  static bool s_was_ready = false;
+  static unsigned long s_last_calib_beep_ms = 0;
+
+  if (s.ready && !s_was_ready) {
+    beepLater(1600);   // キャリブレーション完了: ピロリン(高め)
+    s_last_calib_beep_ms = millis();
+  }
+  s_was_ready = s.ready;
+
+  if (!s.ready && s.wifi) {
+    // キャリブレーション進捗: 3秒ごとに低いビープ
+    if (millis() - s_last_calib_beep_ms > 3000UL) {
+      beepLater(600);
+      s_last_calib_beep_ms = millis();
+    }
+  }
+
+  // LED の状態色(LCD ありボードの配色と合わせてある)
+  if (!s.wifi) {
+    ledSet(0x60, 0x18, 0x00);     // Wi-Fi 切断: オレンジ
+  } else if (!s.ready) {
+    ledSet(0x00, 0x10, 0x50);     // キャリブレーション中: 青(動かさない)
+  } else if (s.motion) {
+    ledSet(0x60, 0x00, 0x00);     // 動き検知中: 赤
+  } else {
+    switch (s.state) {
+      case 2:
+        ledSet(0x30, 0x00, 0x40); // 寝落ち(紫)
+        break;
+      case 1:
+        ledSet(0x00, 0x30, 0x30); // 疑似 leave: 深いシアン
+        break;
+      default:
+        ledSet(0x00, 0x28, 0x00); // 正常監視中: 緑(dim)
+        break;
+    }
+  }
 }
 
 #else  // ---- LCD あり(AtomS3 等。M5Unified 使用) ----

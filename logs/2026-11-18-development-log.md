@@ -47,9 +47,33 @@
 AtomS3 ビルドは検証済み版と同一サイズ(Flash 1,826,983 bytes / 54.7%)で一致を確認。
 残すのは正当な機能: `PHANTOM_NO_DISPLAY`(S3系)のみ。C3 env は削除。
 
-### 未確認(次の検証)
-- XIAO ESP32-S3(Plus/Sense)での CSI 検知実機確認(ボード差し替え後に実施)
-- ESPectre へのバグ報告(リンクのみで C3 が早期ペニックする問題、最小再現コード付き)
+### 本日のまとめ(2026-11-18 の成果と状態)
+
+**動いたもの(実機検証済み)**
+- **M5Stack ATOM Echo で line-phantom-beacon が動作**: Wi-Fi 接続(テザリング REDACTED_SSID)、
+  CSI(wifi_raw, occ 0.89-0.99 / admitted 90-99pps)、キャリブレーション完了、疑似イベント状態機、
+  起動ステージ表示。ATOM Matrix/Lite も同一 env(m5stack-atom)で動くはず(未実機確認)
+- **Echo 固有の実装**: 内蔵 SK6812 LED(GPIO27)による状態色表示(起動=白/キャリブ=青/監視=緑/
+  動き=赤/leave=シアン/寝落ち=紫/NO-WIFI=オレンジ)、push の端末ラベル env 上書き
+  (`PHANTOM_DEVICE_ID=atom-echo`)
+- **4MB・クラシックESP32 ボードへの書き込みフロー確立**:
+  `pio remote upload` は bootloader(0x1000)/partitions(0x8000) を焼かないため、
+  初回は `esptool merge-bin` で merged-firmware.bin を作りホストから
+  `uvx esptool write-flash 0x0`(ボーレート指定なし=115200)で直書き。
+  一度焼けば以後 `pio remote run -t upload` で更新可(アプリ領域のみ)
+
+**未解決 / 対応外 / 未確認**
+- Echo のビープ音: **出ない**(既知問題)。スピーカーは Class-D(DAC/GPIO25駆動)のため
+  LEDC PWM は鳴らず、DAC + esp_timer 方式に変更したが実機で音未確認。LED 他は正常
+- **XIAO ESP32-C3 = 対応外**(前述の ESPectre バグ)
+- XIAO ESP32-S3 Plus: USB が列挙されず未検証(ケーブル/基板の要因疑い、復帰後に再試行)
+- LINE push: 無料プラン月200通の上限に到達し **429**。毎月1日リセット(handson に注意書き済み)
+- ESPectre への C3 バグ報告(未実施。最小再現コードを整理して報告が望ましい)
+
+**ドキュメント更新**
+- `docs/handson.md`: ホスト事前準備(pio + uv)、LINE 200通注意、しきい値変更のお題(secrets.h 編集)、
+  ボード表の更新(C3 削除)
+- `docs/handson-atom-echo.md`: 新規作成(Echo 固有の手順・ビープ/LED仕様・書き込みフロー・Matrix/Lite 補足)
 
 ### 備考: 診断で重要だった事実
 - `rst:0x3 (RTC_SW_SYS_RST)` = esp_restart。ペニック印刷すら出ない早期死
