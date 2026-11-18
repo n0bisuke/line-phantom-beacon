@@ -12,16 +12,22 @@
 #include "secrets.h"
 
 // テレメトリはオプション機能: secrets.h に定義がなければ完全に無効(既定値は空文字)
-#if !defined(TELEMETRY_LOKI_URL)
-#define TELEMETRY_LOKI_URL ""
+#if !defined(TELEMETRY_URL)
+#define TELEMETRY_URL ""
 #define TELEMETRY_LOKI_USER ""
 #define TELEMETRY_TOKEN ""
 #endif
 
 namespace {
 
+// 有効判定はトークンのみ。token ありで URL/USER が未設定の場合は begin() で
+// 分かりやすい案内を出す(URL とインスタンス ID はアカウント固有で Secrets.h に必須)。
 bool lokiConfigured() {
-  return strlen(TELEMETRY_LOKI_URL) > 0 && strlen(TELEMETRY_TOKEN) > 0;
+  return strlen(TELEMETRY_TOKEN) > 0;
+}
+
+bool lokiFullyConfigured() {
+  return strlen(TELEMETRY_URL) > 0 && strlen(TELEMETRY_LOKI_USER) > 0;
 }
 
 // Loki push の共通送信。成功は 204 (No Content)。Wi-Fi 未接続時は静かに諦める。
@@ -34,7 +40,7 @@ bool postLokiBody(const String &body) {
   HTTPClient http;
   http.setConnectTimeout(kLineTimeoutMs);
   http.setTimeout(kLineTimeoutMs);
-  if (!http.begin(tls, TELEMETRY_LOKI_URL)) {
+  if (!http.begin(tls, TELEMETRY_URL)) {
     Serial.println("[telemetry] http.begin() failed");
     return false;
   }
@@ -89,11 +95,17 @@ String buildStreamsPayload(const char *device_label, int64_t ns,
 }  // namespace
 
 void TelemetryClient::begin() {
-  if (lokiConfigured()) {
-    Serial.println("[telemetry] Loki push enabled (Grafana Cloud)");
-  } else {
-    Serial.println("[telemetry] disabled (TELEMETRY_LOKI_URL/TOKEN 未設定)");
+  if (!lokiConfigured()) {
+    Serial.println("[telemetry] disabled (TELEMETRY_TOKEN 未設定)");
+    return;
   }
+  if (!lokiFullyConfigured()) {
+    Serial.println("[telemetry] TELEMETRY_TOKEN あり。あと URL と USER も secrets.h に設定すると有効");
+    Serial.println("         TELEMETRY_URL=https://logs-prod-XXX.grafana.net/loki/api/v1/push");
+    Serial.println("         TELEMETRY_USER=<Loki のインスタンス ID(数字)>");
+    return;
+  }
+  Serial.println("[telemetry] Loki push enabled (Grafana Cloud)");
 }
 
 // SNTP 同期(初回のみ)。Loki はタイムスタンプが必須のため、Wi-Fi 接続後に一度だけ同期する。
@@ -114,7 +126,7 @@ bool TelemetryClient::syncTimeOnce() {
 }
 
 bool TelemetryClient::pushEvent(const char *type, const char *device_label, unsigned long now) {
-  if (!lokiConfigured()) {
+  if (!lokiFullyConfigured()) {
     return false;
   }
   if (!syncTimeOnce()) {
@@ -144,7 +156,7 @@ bool TelemetryClient::pushEvent(const char *type, const char *device_label, unsi
 
 void TelemetryClient::heartbeat(unsigned long now, const char *device_label, bool wifi,
                                 bool ready) {
-  if (!lokiConfigured()) {
+  if (!lokiFullyConfigured()) {
     return;
   }
   if (s_last_heartbeat_ms_ != 0 && now - s_last_heartbeat_ms_ < kTelemetryHeartbeatIntervalMs) {

@@ -95,3 +95,14 @@ AtomS3 ビルドは検証済み版と同一サイズ(Flash 1,826,983 bytes / 54.
 - 調査詳細: logs/2026-11-18-c3-investigation.md
 - ドキュメント: docs/handson-xiao-esp32c3.md を新規作成(ボード別資料の3冊目)
 - 「C3 未対応」の記述は platformio.ini / README / 本ログの記載を訂正済み
+
+
+## 2026-11-18(夕方追記): Grafana Cloud テレメトリ(オプション機能)
+
+- LINE の月200通制限とは別に、**全イベント・presence・稼働状態を Grafana Cloud(無料)の Loki に
+  直接 HTTPS POST** する機能を追加(`src/telemetry_client`)。push 例: イベント行+presence 遷移を
+  1リクエスト、状態 heartbeat は 5 分ごと。
+- TLS は DigiCert Global G2 系の CA 連鎖(`src/telemetry_root_ca.h`)で検証(leaf は含めない)。
+- secrets.h に `TELEMETRY_LOKI_URL/USER/TOKEN` を設定しなければ完全に無効。
+- リアルタイム性: 数秒〜10秒のラグ。無料枠は「3ユーザ/50GB月(ログ)/保持10日」で本用途は余裕。
+- README にセットアップ手順を記載。全 env ビルド+ネイティブテスト 17/17 通過。
