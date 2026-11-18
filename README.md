@@ -8,6 +8,7 @@ M5Stack AtomS3(ESP32-S3)1台で、Wi-Fi CSI による人の動き検知(ESPectre
 
 - [docs/handson-atoms3.md](docs/handson-atoms3.md) — **M5Stack AtomS3 ユーザー向けハンズオン**(実機検証済みの既定ボード。LCDあり)
 - [docs/handson-atom-echo.md](docs/handson-atom-echo.md) — **M5Stack ATOM Echo/Matrix/Lite ユーザー向けハンズオン**(LCDなし・LED/ビープ表示)
+- [docs/handson-xiao-esp32c3.md](docs/handson-xiao-esp32c3.md) — **XIAO ESP32-C3 ユーザー向けハンズオン**(初回はbootloader更新の統合バイナリ直書きが必要)
 - [docs/blog.md](docs/blog.md) — ここまでの開発のまとめ(設計判断と落とし穴)
 
 ## システム構成
@@ -35,8 +36,9 @@ M5Stack AtomS3(ESP32-S3)1台で、Wi-Fi CSI による人の動き検知(ESPectre
 ## 必要なハードウェア
 
 - **M5Stack AtomS3**(`m5stack-atoms3`,既定・実機検証済み。LCDに状態表示)
-- 代替ボード: **XIAO ESP32-S3(+Plus/Sense)**(`seeed_xiao_esp32s3`,LCD無し。`pio run -e seeed_xiao_esp32s3` で選ぶ)
-  - ⚠️ XIAO **ESP32-C3 は未対応**(ESPectre 3.2.0 × C3 で起動ループ。詳細は `logs/2026-11-18-development-log.md`)
+- 代替ボード: **ATOM Echo**(実機検証済み, `m5stack-atom`)・**XIAO ESP32-S3**(`seeed_xiao_esp32s3`)・
+  **XIAO ESP32-C3**(実機検証済み, `seeed_xiao_esp32c3`)。各 `pio run -e <env>` で選ぶ
+  - ⚠️ 4MB ボード(C3/Echo 等)の**初回書き込みは bootloader+パーティションの更新が必要**(統合バイナリ直書き。docs/handson-xiao-esp32c3.md 参照)
 - **2.4GHz の Wi-Fi 4 (802.11n) アクセスポイント**(5GHz専用では CSI が取れない)
 - AtomS3 と AP を同一ネットワークに接続(ESPectre はゲートウェイへのトラフィックで CSI を汲む)
 

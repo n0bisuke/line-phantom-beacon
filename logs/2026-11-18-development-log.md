@@ -81,3 +81,17 @@ AtomS3 ビルドは検証済み版と同一サイズ(Flash 1,826,983 bytes / 54.
   有力な判定材料(214ms 時点)
 - C3 では Arduino グローバルコンストラクタは main 前に走る(`_GLOBAL__sub_I_*` は
   init_array で実行位置を特定できた)
+
+## 2026-11-18(日中追記): C3 起動ループの原因確定(誤判定の訂正)
+
+ 単純に誤判断としてまとめ直した。判定は「ESPectre 由来」としたが**誤り**。
+- 正しい原因は「**チップ上に残っていた古い 2nd-stage bootloader**」(pio remote upload は
+  bootloader/partitions を書かないため更新されないまま)。
+  古い bootloader は IROM≈1MB(0xF0000=64KBページ15枚)を越えるアプリをマップできず、
+  ログ無しの起動ループ(rst:0x3)を出す。rev v0.3 + flash 4MB(XMC) で実測。
+- 対処: 初回のみ merged-firmware.bin で bootloader+partitions+app を丸ごと焼く。
+  以後は pio remote のアプリ書き込みのみでOK。
+- その後の実機検証: C3(rev v0.3)で Wi-Fi 接続(2AP切替)/CSI occ≈1.0/動き検知/LINE push まで**全て確認**。
+- 調査詳細: logs/2026-11-18-c3-investigation.md
+- ドキュメント: docs/handson-xiao-esp32c3.md を新規作成(ボード別資料の3冊目)
+- 「C3 未対応」の記述は platformio.ini / README / 本ログの記載を訂正済み

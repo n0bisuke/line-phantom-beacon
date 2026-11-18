@@ -12,6 +12,7 @@
 #include "phantom_events.h"
 #include "secrets.h"
 
+
 namespace {
 MotionSensor s_motion;
 StatusDisplay s_display;
