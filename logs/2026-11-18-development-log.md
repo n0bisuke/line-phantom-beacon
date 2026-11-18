@@ -50,7 +50,7 @@ AtomS3 ビルドは検証済み版と同一サイズ(Flash 1,826,983 bytes / 54.
 ### 本日のまとめ(2026-11-18 の成果と状態)
 
 **動いたもの(実機検証済み)**
-- **M5Stack ATOM Echo で line-phantom-beacon が動作**: Wi-Fi 接続(テザリング REDACTED_SSID)、
+- **M5Stack ATOM Echo で line-phantom-beacon が動作**: Wi-Fi 接続(テザリング: SSID は secrets.h 登録値)、
   CSI(wifi_raw, occ 0.89-0.99 / admitted 90-99pps)、キャリブレーション完了、疑似イベント状態機、
   起動ステージ表示。ATOM Matrix/Lite も同一 env(m5stack-atom)で動くはず(未実機確認)
 - **Echo 固有の実装**: 内蔵 SK6812 LED(GPIO27)による状態色表示(起動=白/キャリブ=青/監視=緑/
