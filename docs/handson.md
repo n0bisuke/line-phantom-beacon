@@ -44,7 +44,11 @@ AtomS3 以外のボードにも対応しています。ビルドターゲット�
 | env(`-e`) | ボード | LCD | フラッシュ | 備考 |
 |---|---|---|---|---|
 | `m5stack-atoms3`(既定) | M5Stack AtomS3 | あり | 8MB | LCD状態表示あり・実機検証済み |
+| `m5stack-atom` | **ATOM Echo/Matrix/Lite** | なし | 4MB | ビープ+LED。**→ [handson-atom-echo.md](handson-atom-echo.md)** |
 | `seeed_xiao_esp32s3` | XIAO ESP32-S3(+Plus/Sense) | なし | 8MB | 状態はシリアルログで確認 |
+
+> **Codespaces を使わずローカルだけで完結したい人は**下の
+> 「**ローカルPCだけで完結する場合(Codespaces不要)**」セクションへ(clone→build→upload→monitor)。
 
 - ディスプレイなしボードはヘッドレスモード(`PHANTOM_NO_DISPLAY`)になり、起動ステージと状態を**シリアルログで確認**します
 - ⚠️ **XIAO ESP32-C3 は未対応**: ESPectre 3.2.0 × C3(Arduino core 3.3.12)で起動早期にペニックする既知問題

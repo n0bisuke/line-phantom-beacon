@@ -3,6 +3,10 @@
 ATOM Echo は**LCDが無い・クラシックESP32(PICO-D4 4MB)・圧電スピーカー付き**のデバイスです。
 本体手順は [handson.md](handson.md) を参照。この文書は **ATOM Echo 固有の違い**だけを記載します。
 
+> 作業環境はどちらでもOK: **Codespaces/コンテナ**(→ handson.md 本編)にも
+> **ローカルPC完結**(→ handson.md「ローカルPCだけで完結する場合」)にも対応。
+> ビルドコマンド(`pio run -e m5stack-atom`)とテストは共通で、**書き込みだけ方式が違う**(Step 2-3)。
+
 ## AtomS3 と何が違うか
 
 | 項目 | AtomS3(既定) | ATOM Echo |
@@ -51,7 +55,7 @@ ATOM Echo は**LCDが無い・クラシックESP32(PICO-D4 4MB)・圧電スピ�
   Matrix/Lite 用には `PHANTOM_SPEAKER_PIN` を付けない方が安全)
 - 5×5 RGB LED マトリクスがあるため、状態表示を LED に置き換える実装が有望(未実装)
 
-## Step 1: Codespaces でビルド
+## Step 1: ビルド(Codespaces でもローカルでも同じ)
 
 ```bash
 pio run -e m5stack-atom
