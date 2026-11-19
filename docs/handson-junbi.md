@@ -102,6 +102,17 @@ CSI 動き検知の検証には不要ですが、先に発行しておくと後�
 
 ```bash
 pip install -U platformio     # PlatformIO CLI
+
+# PlatformIO アカウント(持っていなければ作成):
+#   CLI なら `pio account register`(メール/ユーザー名/パスワード)。Web でも可:
+#   https://login.platformio.org/signup → 確認メールのリンクで有効化
+#   以後 `pio account login` でログイン(agent 認証にこれを使う)
+# agent 起動の成功例(マシン名は各自 differ):
+#   [info] Name: <マシン名>
+#   [info] Connecting to PlatformIO Remote Development Cloud
+#   [info] Successfully connected
+#   [info] Authenticating
+#   [info] Successfully authorized
 ```
 
 あとはボード別 handson 資料の通り: `pio run -e <env>` → `pio run -t upload -e <env>` → `pio device monitor`。
@@ -111,6 +122,55 @@ pip install -U platformio     # PlatformIO CLI
 リポジトリを fork → Codespaces を開く → ホスト PC に `pio remote agent start` →
 コンテナから `pio remote run -t upload`。4MB ボードの初回のみ統合バイナリのホスト直書き
 (uv / uvx esptool)が必要 — 各 handson 資料参照。
+
+
+## 「クラウド/コンテナで開発 → ネットワーク経由で書き込み」の全体フロー
+
+ビルドと書き込みは**別のマシンで動く**、というのがこのプロジェクトの設計です。
+誰がどこに居て、どの経路でファイルが流れるかの全体図:
+
+```
+┌─────────────────────────────────┐      ┌─────────────────────────────────┐
+│ Codespaces / コンテナ            │      │ ホスト PC(USB が刺さる物理マシン)│
+│ ・コード編集 / build / test      │      │ ・ USB ポートが生えている         │
+│ (PlatformIO Core, 3GB はこちら) │      │ ・ agent / esptool / miniterm    │
+└─────────────────────────────────┘      └─────────────────────────────────┘
+```
+
+**フロー A: pio remote(agent 経由の書き込み)**
+
+```
+[Codespaces/コンテナ] ──ビルド──> firmware.bin ──HTTPS──> [PlatformIO Remote Cloud]
+                                                      │(TLS 経由、agent が取り出す)
+[ホスト: pio remote agent] <────────────────────────────┘
+        │ USB
+        ▼
+    [ESP32 ボード] ← write-flash(アプリ領域)
+```
+
+**フロー B: 統合バイナリのホスト直書き(gh codespace cp で転送)**
+
+```
+[Codespaces] ──ビルド──> .pio/build/<env>/{bootloader,partitions,firmware}.bin
+        │  gh codespace cp(gh CLI で転送)
+        ▼
+[ホスト] uvx esptool write-flash 0x0 merged-firmware.bin ──USB──> [ボード]
+   (ホストに必要なのは gh + uv の2つのみ。PIO ツールチェーンは不要)
+```
+
+**フロー C: シリアルモニタ(逆方向: ログを回収)**
+
+```
+[ボード] ──USB シリアル──> [ホスト: esp_rfc2217_server(ポート4000)または pio remote agent]
+        │  RFC2217 / API 経由
+        ▼
+[Codespaces/コンテナ] pio device monitor で観察
+```
+
+- どこで何が起きるかのまとめ: **編集/ビルド/テスト=クラウド(Codespaces)またはコンテナ、
+  書き込み=ホスト PC+USB、中継=PlatformIO Cloud か gh/uv の手元コピー**
+- 秘密情報付きファームの配送ルートは **A: PlatformIO Cloud 経由 TLS**、**B: gh codespace cp の
+  転送経由**のどちらか(両者とも暗号化経路)。生テキストで秘密を扱うのは secrets.h のみ
 
 ## 秘密情報まとめ(secrets.h に書くもの一覧)
 

@@ -109,6 +109,12 @@ Codespaces の場合は初回ビルドでツールチェーン約3GBのダウン
 
 ## Step 2: 初回のみ「統合バイナリ」をホストから直書き
 
+> 📌 **直書きの前に: ボードをホスト PC と USB 接続してください**(データ通信用ケーブル。
+> 電源 LED が点灯していれば電力は来ている)。ポート名は `ls /dev/cu.*` で確認:
+> - **USB 直結チップ(C3/C6/S3)= `cu.usbmodem…`、USB-UART ブリッジ(Echo)= `cu.usbserial-…`**
+> - ポートが出ない場合はケーブル差し替え・USB-C 向き反転・別ポートを試す
+
+
 **このSTEPでやること: 初回書き込みのため、bootloader+パーティション込の統合バイナリをホスト PC から焼きます。** 一度だけ実施すれば、以後は普通の更新手順で済みます。
 
 **理由**: `pio remote run -t upload` はアプリ領域(0x10000)のみ書き込みます。
@@ -139,7 +145,10 @@ CSI ファーム(約1.4MB)が入らないため、パーティションの書き
      Codespaces ルートでもこの1回だけはホスト側で実施が必要です
    - ポート名は `ls /dev/cu.*` で確認(Echo は `cu.usbserial-…` 形式: USB-UARTブリッジ)
    - `921600` ボーの指定は **しない**こと(Echo のブリッジで帯域エラーが出る。既定115200で約76秒)
-   - ソースはコンテナ/Codespaces とホストで共有されている(cloneした同一リポジトリ)
+   - **ソースの所在地に注意**: Codespaces とホスト PC のファイルは自動共有**されない**
+     (ビルド成果物は Codespace 上にある)。ホストからは `gh codespace cp -r <codespace名>:workspace/.pio/build/m5stack-atom/merged-firmware.bin .` で取得する
+     (gh が無ければ handson-atoms3.md の「方式 C」を参照))
+   - ローカルビルド(ホストで `pio run`)ならこの問題は発生しない
 
 3. `Hash of data verified.` まで進めば完了。**以後の更新は Step 3 だけでよい**
 

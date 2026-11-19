@@ -72,6 +72,12 @@ pio test -e native               # ロジックのユニットテスト(ボー�
 
 ## Step 2: 初回のみ「統合バイナリ」をホストから直書き
 
+> 📌 **直書きの前に: ボードをホスト PC と USB 接続してください**(データ通信用ケーブル。
+> 電源 LED が点灯していれば電力は来ている)。ポート名は `ls /dev/cu.*` で確認:
+> - **USB 直結チップ(C3/C6/S3)= `cu.usbmodem…`、USB-UART ブリッジ(Echo)= `cu.usbserial-…`**
+> - ポートが出ない場合はケーブル差し替え・USB-C 向き反転・別ポートを試す
+
+
 **このSTEPでやること: 初回書き込みのため、bootloader+パーティション込の統合バイナリをホスト PC から焼きます。** 一度だけ実施すれば、以後は普通の更新手順で済みます。
 
 1. Codespaces/コンテナ内で統合バイナリを作成(bootloader+partitions+app):
@@ -91,6 +97,12 @@ pio test -e native               # ロジックのユニットテスト(ボー�
    uvx esptool --chip esp32c3 --port /dev/cu.usbmodem101 write-flash 0x0 \
      .pio/build/seeed_xiao_esp32c3/merged-firmware.bin
    ```
+
+
+   > 💡 **Codespaces でビルドした場合**: `.pio/build/**` は Codespace 上にしかありません。
+   > ホストへは `gh codespace cp -r <codespace名>:workspace/.pio/build/seeed_xiao_esp32c3/merged-firmware.bin .`
+   > で取得してから焼きます(gh は `brew install gh && gh auth login`)。
+   > **ローカルで `pio run` できた参加者はこの手順は不要**(`pio run -t upload` が全部焼きます)。
 
    - `--baud` は指定しない(既定115200が確実。約2分)
    - 完了すると `Hash of data verified.` → 自動リセット → ファーム起動

@@ -101,8 +101,19 @@ pio test -e native   # 状態遷移・BEACONフレームのユニットテスト
 ホストPC(USB の繋がる PC、agent を常駐):
 
 ```bash
+pio account register      # アカウントを持っていなければ作成(既認証なら不要。Webでも可)
 pio account login          # PlatformIO の無料アカウント(LINEではない)
 pio remote agent start     # 起動したまま置いておく
+```
+
+**成功するとこの4行が出ます**(マシン名は環境ごとに異なります):
+
+```
+[info] Name: <マシン名>
+[info] Connecting to PlatformIO Remote Development Cloud
+[info] Successfully connected
+[info] Authenticating
+[info] Successfully authorized
 ```
 
 Codespaces 側:
@@ -121,9 +132,34 @@ pio run -t upload     # ボードを USB 接続した状態で
 pio device monitor    # Ctrl+C で終了
 ```
 
-### 方式 C: ホストだけで esptool 直書き(PlatformIO のツールチェーン不要)
+### 方式 C: esptool 直書き(2回目以降のアプリ領域書き換えをツールチェーンなしで行う)
 
-Codespaces でビルドしたアプリを、ホスト PC は uv だけの状態で焼く場合:
+⚠️ **Codespaces でビルドした場合、「ホストだけで完結」はできません**: ビルド成果物を Codespace
+からホストへ運ぶ必要があります(下記 gh codespace cp)。ファイル転送なしで完結させたい場合は
+ローカルに PlatformIO を入れて `pio run -t upload`(方式A/B)を使ってください。
+
+⚠️ **前提: 標準の Codespaces ではビルド成果物(.pio/build/**)はホスト PC には存在しません**
+(ビルドは Codespaces 上のクラウド環境で行われるため。OrbStack 等のホスト共有 Docker と違い、
+ファイルの自動共有はありません)。ホストに持ってくるには **gh CLI の codespace cp** を使います:
+
+```bash
+# ホストで: gh を入れて認証(初回のみ)
+#   macOS: brew install gh && gh auth login
+gh codespace list                       # Codespaces の名前を確認
+gh codespace cp -r <codespace名>:workspace/.pio/build/m5stack-atoms3/firmware.bin .
+gh codespace cp -r <codespace名>:workspace/.pio/build/m5stack-atoms3/bootloader.bin .
+gh codespace cp -r <codespace名>:workspace/.pio/build/m5stack-atoms3/partitions.bin .
+```
+
+(あるいは **ホストで PlatformIO を入れてローカルビルド**すれば転送は一切不要:
+
+```bash
+pip install -U platformio
+pio run -t upload        # ← これ1つで bootloader+パーティション+アプリを全部焼く
+```
+
+)
+ホストにファイルが揃った後の焼き方:
 
 ```bash
 # (任意)統合バイナリを作る場合(bootloader+パーティションもまとめて)
