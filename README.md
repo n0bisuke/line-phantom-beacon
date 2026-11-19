@@ -37,6 +37,8 @@ LINE Simple Beacon 形式の BLE Advertising(Phase 2)はフレーム生成部ま
 - [docs/handson-xiao-esp32c3.md](docs/handson-xiao-esp32c3.md) — **XIAO ESP32-C3 用**(初回 bootloader 更新必須)
 - [docs/handson-xiao-esp32c6.md](docs/handson-xiao-esp32c6.md) — **XIAO ESP32-C6 用**(DNS トラフィック)
 - [docs/readme.md](docs/readme.md) — **ボード別 検証の注意点・落とし穴(実記録)** ← 先に読むと詰まらない
+- [docs/handsons-ouyou.md](docs/handsons-ouyou.md) — **応用コンテンツ: 感度とキャリブレーションの「どこをどう変えるとどうなるか」**(用途別プリセット・無人時誤検知の調査フロー)
+- [docs/espectre-feature-survey.md](docs/espectre-feature-survey.md) — ESPectre 3.2.0 の実装済み/不可能/実装可能 機能調査
 - [docs/blog.md](docs/blog.md) — ここまでの開発のまとめ(設計判断と落とし穴)
 
 ## システム構成
