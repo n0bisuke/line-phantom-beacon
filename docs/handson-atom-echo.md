@@ -73,12 +73,17 @@ ATOM Echo は**LCDが無い・クラシックESP32(PICO-D4 4MB)・圧電スピ�
 
 ## Step 1: 秘密情報 → ビルド(Codespaces でもローカルでも同じ)
 
+**このSTEPでやること: LINE のアクセストークンとユーザーID、Wi-Fi 情報を secrets.h に入れ、ファームをビルドします。** LINE準備がまだなら共通準備ガイド [handson-junbi.md](handson-junbi.md) の STEP 1 を先に。
+
 **secrets.h**(Wi-Fi・LINEトークン・宛先。コミットされない。編集は最初の1回 + しきい値変更時):
 
 ```bash
 cp include/secrets.h.example include/secrets.h
-your-editor include/secrets.h
+code include/secrets.h
 ```
+
+> 💡 `code` は Codespaces(VS Code) の開き方。**ローカル参加者はいつも使っているエディタでOK**
+> (nano / vim / GUI エディタ / GitHub Web 画面での編集など)。やることは同じです。
 
 | 定義 | 値 |
 |---|---|
@@ -103,6 +108,8 @@ Codespaces の場合は初回ビルドでツールチェーン約3GBのダウン
 > コマンドに `-e <自分のenv>` を付ければ常にそのボードでビルド/書き込みされます。
 
 ## Step 2: 初回のみ「統合バイナリ」をホストから直書き
+
+**このSTEPでやること: 初回書き込みのため、bootloader+パーティション込の統合バイナリをホスト PC から焼きます。** 一度だけ実施すれば、以後は普通の更新手順で済みます。
 
 **理由**: `pio remote run -t upload` はアプリ領域(0x10000)のみ書き込みます。
 工場出荷状態の Echo には「アプリ1MB」のパーティションテーブルが既に入っており、
@@ -138,6 +145,8 @@ CSI ファーム(約1.4MB)が入らないため、パーティションの書き
 
 ## Step 3: 通常運用(pio remote: Codespaces から or ローカル)
 
+**このSTEPでやること: 2回目以降のファーム更新手順(アプリ領域だけの焼き直しで済みます)。**
+
 ファームを変えて再検証するとき。Codespaces からは pio remote(agent)、**ローカルのみなら
 esptool 直書きがそのまま使える**:
 
@@ -158,6 +167,8 @@ pio device monitor --port /dev/cu.usbserial-XXXXXXXX
 - ボードが工場出荷状態に戻った場合(消去した場合など)のみ Step 2 に戻る
 
 ## Step 4: 実機確認(LCDなし版)
+
+**このSTEPでやること: ボードを設置して、シリアルログと LINE 通知(Wi-Fi接続→動き検知→push)を確認します。**
 
 1. ビープ3連(起動)→ Wi-Fi 接続: `[wifi] connected channel=... rssi=...`
 2. 3秒ごとのピッ(キャリブレーション中。この間は**動かさない**)

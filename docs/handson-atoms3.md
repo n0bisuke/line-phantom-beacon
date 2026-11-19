@@ -30,6 +30,8 @@ pip install -U platformio   # 全ルートで共通(Agent用)
 
 ## Step 1: 作業環境を用意する
 
+**このSTEPでやること: 作業環境を用意します。** Codespaces(ブラウザで完結)か ローカルPC のどちらかを決めて、その手順のみ実行します。
+
 **A. Codespaces(推奨・チーム向き)**
 
 1. リポジトリを fork → 「Code → Codespaces → Create codespaces on main」
@@ -51,10 +53,15 @@ pio run -e native   # ツールチェーン初回取得込みで動作確認(10�
 
 ## Step 2: 秘密情報の設定(secrets.h)
 
+**このSTEPでやること: LINE のチャネルアクセストークンとユーザーID、Wi-Fi の SSID/パスワードを secrets.h に入れます。** LINE準備がまだなら共通準備ガイド [handson-junbi.md](handson-junbi.md) の STEP 1 を先に。
+
 ```bash
 cp include/secrets.h.example include/secrets.h
-your-editor include/secrets.h
+code include/secrets.h
 ```
+
+> 💡 `code` は Codespaces(VS Code) の開き方。**ローカル参加者はいつも使っているエディタでOK**
+> (nano / vim / GUI エディタ / GitHub Web 画面での編集など)。やることは同じです。
 
 | 定義 | 値 |
 |---|---|
@@ -76,6 +83,8 @@ push テキストや端末名は `DEVICE_ID`、10/20/30秒のしきい値は `PS
 
 ## Step 3: ビルドとテスト
 
+**このSTEPでやること: ファームウェアをビルドし、ボードなしのPCでロジックの自動テスト(17件)を回します。** ここが全部緑ならあとは書き込むだけです。
+
 ```bash
 pio run              # 既定 = m5stack-atoms3
 pio test -e native   # 状態遷移・BEACONフレームのユニットテスト(ボード不要)
@@ -84,6 +93,8 @@ pio test -e native   # 状態遷移・BEACONフレームのユニットテスト
 期待: `SUCCESS` / テスト 17/17。Flash 約 55%。
 
 ## Step 4: 書き込みとモニタ
+
+**このSTEPでやること: ビルドしたファームを USB ケーブル経由でボードに焼き、シリアルログで動作を確認します。**
 
 **A. Codespaces ルート(pio remote / agent 経由)**
 
@@ -110,6 +121,28 @@ pio run -t upload     # ボードを USB 接続した状態で
 pio device monitor    # Ctrl+C で終了
 ```
 
+### 方式 C: ホストだけで esptool 直書き(PlatformIO のツールチェーン不要)
+
+Codespaces でビルドしたアプリを、ホスト PC は uv だけの状態で焼く場合:
+
+```bash
+# (任意)統合バイナリを作る場合(bootloader+パーティションもまとめて)
+esptool --chip esp32s3 merge-bin -o .pio/build/m5stack-atoms3/merged-firmware.bin   --flash_mode dio --flash_size 8MB   0x0     .pio/build/m5stack-atoms3/bootloader.bin   0x8000  .pio/build/m5stack-atoms3/partitions.bin   0xe000  /root/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin   0x10000 .pio/build/m5stack-atoms3/firmware.bin
+
+# ホスト: 2回目以降は「アプリ領域だけ」でよい(bootloader は既にボードに入っている)
+uv esptool --chip esp32s3 --port /dev/cu.usbmodemXXX write-flash 0x10000   .pio/build/m5stack-atoms3/firmware.bin
+
+# (初回/パーティション変更があった場合のみ merged を 0x0 から焼く)
+```
+
+Codespaces とホストはリポジトリが共有されているため、上記のファイルパスがそのまま使えます。
+
+書き込み後のモニタ(ホスト単独):
+
+```bash
+uv run --with pyserial python -m serial.tools.miniterm /dev/cu.usbmodemXXX 115200
+```
+
 ### うまくいかないとき(AtomS3 特有)
 
 - `rst:0x15 ... boot:0x20 DOWNLOAD(USB/UART0)` が出て画面が暗いまま
@@ -120,6 +153,8 @@ pio device monitor    # Ctrl+C で終了
 - `Association refused too many times` → テザリング相手が初回拒むことがある。リトライで接続
 
 ## Step 5: 実機で確認
+
+**このSTEPでやること: ボードを設置して動かし、LCD の状態表示と LINE 通知が届くところまで確認します。**
 
 1. 起動 → LCD に `BOOT` → `WIFI` → `RUN` の段階番号
 2. 黄色 **`CALIB`** が約30秒(**途中で動かさない**。「何もない部屋」の基準を作る)

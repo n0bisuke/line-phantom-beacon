@@ -40,12 +40,17 @@ ATOM Echo 用は [handson-atom-echo.md](handson-atom-echo.md)、XIAO C3 は [han
 
 ## Step 1: 秘密情報 → ビルド(Codespaces でもローカルでも同じ)
 
+**このSTEPでやること: LINE のアクセストークンとユーザーID、Wi-Fi 情報を secrets.h に入れ、ファームをビルドします。** LINE準備がまだなら共通準備ガイド [handson-junbi.md](handson-junbi.md) の STEP 1 を先に。
+
 ```bash
 cp include/secrets.h.example include/secrets.h
-your-editor include/secrets.h    # Wi-Fi(2.4GHz)/ LINE_CHANNEL_TOKEN / LINE_USER_ID
+code include/secrets.h    # Wi-Fi(2.4GHz)/ LINE_CHANNEL_TOKEN / LINE_USER_ID
 pio run -e seeed_xiao_esp32c6    # C6 用ファーム(Flash 45.7%)
 pio test -e native               # ロジックのユニットテスト(ボード不要)
 ```
+
+> 💡 `code` は Codespaces(VS Code) の開き方。**ローカル参加者はいつも使っているエディタでOK**
+> (nano / vim / GUI エディタ / GitHub Web 画面での編集など)。やることは同じです。
 
 - LINE push には **`(xiao-c6)`** ラベルが付く
 - LINE 無料プランは **月200通**(検証で消費し、超えると `429`。毎月1日リセット)
@@ -55,6 +60,8 @@ pio test -e native               # ロジックのユニットテスト(ボー�
 > コマンドに `-e <自分のenv>` を付ければ常にそのボードでビルド/書き込みされます。
 
 ## Step 2(Codespaces の場合のみ): 初回の統合バイナリ直書き
+
+**このSTEPでやること: Codespaces ルート限定の初回手順です。** bootlaoder+パーティション込の統合バイナリをホスト PC から焼きます。ローカルの `pio run -t upload` では不要(全部まとめて焼かれるため)。
 
 1. コンテナ内で統合バイナリ作成:
 
@@ -78,6 +85,8 @@ pio test -e native               # ロジックのユニットテスト(ボー�
    **一度焼けば以後は pio remote の更新で良い**
 
 ## Step 3: 実機確認(シリアルログ + LED)
+
+**このSTEPでやること: ボードを設置して、シリアルログ・LED の点滅・LINE 通知を確認します。**
 
 ```
 [wifi] 2 APs registered, scanning...

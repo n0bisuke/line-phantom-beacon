@@ -51,12 +51,17 @@ ATOM Echo 用は [handson-atom-echo.md](handson-atom-echo.md)。
 
 ## Step 1: 秘密情報 → ビルド(Codespaces でもローカルでも同じ)
 
+**このSTEPでやること: LINE のアクセストークンとユーザーID、Wi-Fi 情報を secrets.h に入れ、ファームをビルドします。** LINE準備がまだなら共通準備ガイド [handson-junbi.md](handson-junbi.md) の STEP 1 を先に。
+
 ```bash
 cp include/secrets.h.example include/secrets.h
-your-editor include/secrets.h    # Wi-Fi(2.4GHz)/ LINE_TOKEN / LINE_USER_ID
+code include/secrets.h    # Wi-Fi(2.4GHz)/ LINE_TOKEN / LINE_USER_ID
 pio run -e seeed_xiao_esp32c3    # C3 用ファーム(Flash 44.6%)
 pio test -e native               # ロジックのユニットテスト(ボード不要)
 ```
+
+> 💡 `code` は Codespaces(VS Code) の開き方。**ローカル参加者はいつも使っているエディタでOK**
+> (nano / vim / GUI エディタ / GitHub Web 画面での編集など)。やることは同じです。
 
 - LINE push には **`(xiao-c3)`** ラベルが付く(C3 env の `PHANTOM_DEVICE_ID=xiao-c3`)
 - LINE 無料プランは **月200通**。検証で消費し、超えると `429`(毎月1日リセット)
@@ -66,6 +71,8 @@ pio test -e native               # ロジックのユニットテスト(ボー�
 > コマンドに `-e <自分のenv>` を付ければ常にそのボードでビルド/書き込みされます。
 
 ## Step 2: 初回のみ「統合バイナリ」をホストから直書き
+
+**このSTEPでやること: 初回書き込みのため、bootloader+パーティション込の統合バイナリをホスト PC から焼きます。** 一度だけ実施すれば、以後は普通の更新手順で済みます。
 
 1. Codespaces/コンテナ内で統合バイナリを作成(bootloader+partitions+app):
 
@@ -90,12 +97,16 @@ pio test -e native               # ロジックのユニットテスト(ボー�
 
 ## Step 3: 通常運用(更新はアプリ領域だけ)
 
+**このSTEPでやること: 2回目以降のファーム更新手順(アプリ領域だけの焼き直しで済みます)。**
+
 - **Codespaces(pio remote)**: ホストで `pio remote agent start` →
   `pio remote run -t upload -e seeed_xiao_esp32c3` → `pio remote device monitor`
 - **ローカル完結**: `pio run -t upload -e seeed_xiao_esp32c3` → `pio device monitor`
 - 初回以降はパーティション変更がなければ直接書き込み不要
 
 ## Step 4: 実機で確認(シリアルログのみ)
+
+**このSTEPでやること: ボードを設置して、シリアルログと LINE 通知を確認します。**
 
 ```
 [wifi] 2 APs registered, scanning...
