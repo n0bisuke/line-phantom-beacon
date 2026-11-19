@@ -1,6 +1,7 @@
 # ハンズオン: M5Stack ATOM Echo で line-phantom-beacon を動かす(GitHub Codespaces / ローカル PC 対応)
 
 ATOM Echo は**LCDが無い・クラシックESP32(PICO-D4 4MB)・圧電スピーカー付き**のデバイスです。
+共通準備(LINE Bot・キー・ESPectre 解説)は [handson-junbi.md](handson-junbi.md) を先に済ませておいてください。
 この文書だけで完結します(AtomS3 用は [handson-atoms3.md](handson-atoms3.md))。
 
 > 作業環境はどちらでもOK: **Codespaces** でも **ローカルPC完結** でも同じコマンドで進めます。

@@ -1,6 +1,7 @@
 # ハンズオン: M5Stack AtomS3 で line-phantom-beacon を動かす(GitHub Codespaces / ローカル PC 対応)
 
 AtomS3 は **LCD 付きの既定ボード**(実機検証済み)。検知状態が画面で見えるので、最初の 1 台はこれを推奨します。
+共通準備(LINE Bot・キー・ESPectre 解説)は [handson-junbi.md](handson-junbi.md) を先に済ませておいてください。
 
 他のボード用の資料: **ATOM Echo / Matrix / Lite → [handson-atom-echo.md](handson-atom-echo.md)**
 

@@ -1,6 +1,7 @@
 # ハンズオン: XIAO ESP32-C6 で line-phantom-beacon を動かす(GitHub Codespaces / ローカル PC 対応)
 
 XIAO ESP32-C6 は **LCD無し・ESP32-C6・4MBフラッシュ・オンボード単色LED(GPIO15)** です。
+共通準備(LINE Bot・キー・ESPectre 解説)は [handson-junbi.md](handson-junbi.md) を先に済ませておいてください。
 この文書だけで完結します。AtomS3 用は [handson-atoms3.md](handson-atoms3.md)、
 ATOM Echo 用は [handson-atom-echo.md](handson-atom-echo.md)、XIAO C3 は [handson-xiao-esp32c3.md](handson-xiao-esp32c3.md)。
 

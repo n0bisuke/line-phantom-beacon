@@ -32,6 +32,7 @@ LINE Simple Beacon 形式の BLE Advertising(Phase 2)はフレーム生成部ま
 
 ## ドキュメント(ボード別ハンズオン 5 種)
 
+- [docs/handson-junbi.md](docs/handson-junbi.md) — **共通準備ガイド**(LINE Bot作成・HWID・ESPectre解説・環境整備。まずこれ)
 - [docs/handson-atoms3.md](docs/handson-atoms3.md) — **AtomS3 用**(LCDあり。Codespaces/ローカル両対応)
 - [docs/handson-atom-echo.md](docs/handson-atom-echo.md) — **ATOM Echo/Matrix/Lite 用**(RGB LED・初回統合バイナリあり)
 - [docs/handson-xiao-esp32c3.md](docs/handson-xiao-esp32c3.md) — **XIAO ESP32-C3 用**(初回 bootloader 更新必須)

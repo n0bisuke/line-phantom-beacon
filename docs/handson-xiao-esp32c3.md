@@ -1,6 +1,7 @@
 # ハンズオン: XIAO ESP32-C3 で line-phantom-beacon を動かす(GitHub Codespaces / ローカル PC 対応)
 
 XIAO ESP32-C3 は **LCD無し・ESP32-C3(rev v0.3 相当の小さいボード)** です。
+共通準備(LINE Bot・キー・ESPectre 解説)は [handson-junbi.md](handson-junbi.md) を先に済ませておいてください。
 この文書だけで完結します。AtomS3 用は [handson-atoms3.md](handson-atoms3.md)、
 ATOM Echo 用は [handson-atom-echo.md](handson-atom-echo.md)。
 
