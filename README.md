@@ -16,6 +16,8 @@ LINE Simple Beacon 形式の BLE Advertising(Phase 2)はフレーム生成部ま
 | `seeed_xiao_esp32c3` | **XIAO ESP32-C3** | 単色 LED 点滅(GPIO3) | WIFI_RAW | ✅ 完全実機検証済み(CSI occ=1.0、LINE push到達) |
 | `seeed_xiao_esp32c6` | **XIAO ESP32-C6** | 単色 LED 点滅(GPIO15) | **DNS**(C6 は WIFI_RAW 不可) | ✅ LINE push到達確認済み(2026-11-18) |
 | `seeed_xiao_esp32s3` | XIAO ESP32-S3(+Plus/Sense) | 単色 LED 点滅 | WIFI_RAW | ⏳ 検証中(USB 列挙問題の解決待ち) |
+| `m5stack-sticks3` | **M5Stack StickS3** | 1.9" LCD(320×170) | WIFI_RAW | 🟡 ビルド・直書き起動確認済み。LCD/push は確認中
+   (ボード定義なし→AtomS3 定義流用。`pio remote` 転送滞留のためホスト esptool 推奨) |
 
 - ビルド: `pio run -e <env>`(既定 = AtomS3)。ロジック・LINE push・しきい値(10/20/30秒)は全ボード同一実装(テスト 17/17)
 - トラフィックモードは env の build_flags で選択: `PHANTOM_TRAFFIC_DNS` / `PHANTOM_TRAFFIC_PING` / 既定 WIFI_RAW
