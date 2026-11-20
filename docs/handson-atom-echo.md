@@ -107,6 +107,18 @@ Codespaces の場合は初回ビルドでツールチェーン約3GBのダウン
 > 注: `platformio.ini` の `default_envs`(既定 = AtomS3)は**書き換え不要**です。
 > コマンドに `-e <自分のenv>` を付ければ常にそのボードでビルド/書き込みされます。
 
+### ローカル PlatformIO での書き込み(一番シンプル・推奨)
+
+ホスト PC に PlatformIO を入れていれば、**転送も統合バイナリも不要**でこの 1 コマンドです
+(bootloader+パーティション+アプリが全領域焼かれ、4MB ボードの初回手順も自動で済みます):
+
+```bash
+pip install -U platformio     # ホストに未インストールの場合のみ(初回ビルドはツールチェーン約3GBで10分+)
+pio run -t upload -e m5stack-atom    # ボードを USB 接続した状態で
+pio device monitor            # シリアルモニタ(Ctrl+C で終了)
+```
+
+Codespaces でビルドした成果物を使う場合(転送あり)は上の Step 2 の手順を参照。
 ## Step 2: 初回のみ「統合バイナリ」をホストから直書き
 
 > 📌 **直書きの前に: ボードをホスト PC と USB 接続してください**(データ通信用ケーブル。

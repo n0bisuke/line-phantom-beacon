@@ -95,6 +95,18 @@ pio test -e native               # ロジックのユニットテスト(ボー�
    完了すると `Hash of data verified.` → 自動リセット → ファーム起動。
    **一度焼けば以後は pio remote の更新で良い**
 
+### ローカル PlatformIO での書き込み(一番シンプル・推奨)
+
+ホスト PC に PlatformIO を入れていれば、**転送も統合バイナリも不要**でこの 1 コマンドです
+(bootloader+パーティション+アプリが全領域焼かれ、4MB ボードの初回手順も自動で済みます):
+
+```bash
+pip install -U platformio     # ホストに未インストールの場合のみ(初回ビルドはツールチェーン約3GBで10分+)
+pio run -t upload -e seeed_xiao_esp32c6    # ボードを USB 接続した状態で
+pio device monitor            # シリアルモニタ(Ctrl+C で終了)
+```
+
+Codespaces でビルドした成果物を使う場合(転送あり)は上の Step 2 の手順を参照。
 ## Step 3: 実機確認(シリアルログ + LED)
 
 **このSTEPでやること: ボードを設置して、シリアルログ・LED の点滅・LINE 通知を確認します。**

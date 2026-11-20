@@ -77,6 +77,18 @@ pio test -e native            # ロジックのユニットテスト(17/17)
 > 備考: `pio remote run -t upload`(agent 経由)は本ボードでは転送が滞留する問題が観測されています
 > (2026-11-19 実測)。原因調査は今後の課題。手元 esptool が最速・確実です。
 
+### ローカル PlatformIO での書き込み(一番シンプル・推奨)
+
+ホスト PC に PlatformIO を入れていれば、**転送も統合バイナリも不要**でこの 1 コマンドです
+(bootloader+パーティション+アプリが全領域焼かれ、4MB ボードの初回手順も自動で済みます):
+
+```bash
+pip install -U platformio     # ホストに未インストールの場合のみ(初回ビルドはツールチェーン約3GBで10分+)
+pio run -t upload -e m5stack-sticks3    # ボードを USB 接続した状態で
+pio device monitor            # シリアルモニタ(Ctrl+C で終了)
+```
+
+Codespaces でビルドした成果物を使う場合(転送あり)は上の Step 2 の手順を参照。
 ## Step 3: 実機確認(LCD)
 
 **このSTEPでやること: ボードを設置して、LCD・シリアルログ・LINE 通知を確認します。**
